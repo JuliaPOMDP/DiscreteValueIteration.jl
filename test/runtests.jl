@@ -1,23 +1,15 @@
+addprocs(int(CPU_CORES/2)-1)
+
 using ParallelValueIteration
+using GridWorld_
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
 
-qTest = readdlm("grid-world-20x20-Q-matrix.txt")
+function gridWorldTest(nProcs::Int, gridSize::Int, 
+                       rPos::Array, rVals::Array, file::String;
+                       nIter::Int=10, nChunks::Int=1)
 
-
-
-rPos  = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
-rVals = [10.0, 3.0, -5.0, -10.0]
-
-mdp = GridWorldMDP(gridSize, gridSize, rPos, rVals)
-
-@test_approx_eq_eps q[2] qp[2] 1e-5
-
-
-function gridWorldTest(nProcs::Int, gridSize::Int=20, rPos::Array, rVals::array;
-                       nIter=1, nChunks::Int=1)
+    qt = readdlm(file)
 
     rPos  = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
     rVals = [10.0, 3.0, -5.0, -10.0]
@@ -39,19 +31,32 @@ function gridWorldTest(nProcs::Int, gridSize::Int=20, rPos::Array, rVals::array;
 
     end
 
-    tolerance = 1e-3
+    tolerance = 1e-10
+
+    # test gauss-siedel
     gauss_siedel_flag = true
-
     pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
+    (utilp, qp) = solve(pvi, mdp)
 
-    @time qp = solve(pvi, mdp)
-    return q, qp
+    @test_approx_eq_eps qt qp 1.0
 
+
+    # test regualr
+    gauss_siedel_flag = false
+    pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
+    (utilp, qp) = solve(pvi, mdp)
+
+    @test_approx_eq_eps qt qp 1.0
+
+    return true
 end
 
 
+rPos     = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
+rVals    = [10.0, 3.0, -5.0, -10.0]
+nProcs   = int(CPU_CORES/2) - 1
+file     = "grid-world-10x10-Q-matrix.txt"
+gridSize = 10
 
-rPos  = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
-rVals = [10.0, 3.0, -5.0, -10.0]
-
-nProcs = CPU_CORES - 1
+@test gridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
+@test gridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true

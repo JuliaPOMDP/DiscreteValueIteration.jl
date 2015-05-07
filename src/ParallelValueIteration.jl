@@ -72,8 +72,6 @@ function solveGS(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
         for c = 1:nChunks
             lst = chunks[c]
 
-            println(lst)
-
             # no residuals, so results are 0.0
             results = pmap(x -> (idxs = x; solveChunk(mdp, util, valQ, idxs)), lst)
            
@@ -117,22 +115,25 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=fa
     for i = 1:maxIter
         # residual tolerance
         residual = 0.0
+        uIdx = 1
         tic()
         for c = 1:nChunks
             # util array to update: 1 or 2
             uIdx = uCount % 2 + 1
             lst = chunks[c]
 
-            if uIdx1 == 1
+            if uIdx == 1
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util1, util2, valQ, idxs)), lst)
-                residual += results
+                residual += sum(results)
             else
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util2, util1, valQ, idxs)), lst)
-                residual += results
+                residual += sum(results)
             end
            
+            println(results)
+
             uCount += 1
         end # chunk loop 
 
