@@ -28,14 +28,21 @@ end
 
 
 # returns the utility function and the Q-matrix
-function solve(solver::ParallelSolver, mdp::DiscreteMDP)
+function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
+    nProcs   = solver.numProcessors
+    maxProcs = int(CPU_CORES / 2)
+
+    # processor restriction checks
+    nProcs < 2 ? error("Less than 2 processors not allowed") : nothing
+    nProcs > maxProcs ? error("Number of requested processors is too large, try $maxProcs") : nothing
+
     # check gauss-seidel flag
     gs = solver.gaussSeidel
-    gs ? (return solveGS(solver, mdp)) : (return solveRegular(solver, mdp))
+    gs ? (return solveGS(solver, mdp, verbose=verbose)) : (return solveRegular(solver, mdp, verbose=verbose))
 end
 
 
-function solveGS(solver::ParallelSolver, mdp::DiscreteMDP)
+function solveGS(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     # gauss-seidel does not check tolerance
     # always runs for max iterations
 
@@ -57,23 +64,30 @@ function solveGS(solver::ParallelSolver, mdp::DiscreteMDP)
     util = SharedArray(Float64, (nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
     valQ  = SharedArray(Float64, (nActions, nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
 
+    iterTime  = 0.0
+    totalTime = 0.0
+
     for i = 1:maxIter
+        tic()
         for c = 1:nChunks
             lst = chunks[c]
 
-            tic()
+            println(lst)
+
             # no residuals, so results are 0.0
             results = pmap(x -> (idxs = x; solveChunk(mdp, util, valQ, idxs)), lst)
-            t = toc();
-            println("Chunk: $c, time: $t")
            
         end # chunk loop 
+
+        iterTime = toq();
+        totalTime += iterTime
+        verbose ? (println("Iteration : $i, iteration run-time: $iterTime, total run-time: $totalTime")) : nothing
     end # main iteration loop
     return util, valQ
 end
 
 
-function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP)
+function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     
     nStates  = numStates(mdp)
     nActions = numActions(mdp)
@@ -95,17 +109,20 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP)
     util2 = SharedArray(Float64, (nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
     valQ  = SharedArray(Float64, (nActions, nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
 
+    iterTime  = 0.0
+    totalTime = 0.0
+
     uCount = 0
     lastIdx = 1
     for i = 1:maxIter
         # residual tolerance
         residual = 0.0
+        tic()
         for c = 1:nChunks
             # util array to update: 1 or 2
             uIdx = uCount % 2 + 1
             lst = chunks[c]
 
-            tic()
             if uIdx1 == 1
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util1, util2, valQ, idxs)), lst)
@@ -115,11 +132,14 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP)
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util2, util1, valQ, idxs)), lst)
                 residual += results
             end
-            t = toc();
-            println("Chunk: $c, time: $t")
            
             uCount += 1
         end # chunk loop 
+
+        iterTime = toq();
+        totalTime += iterTime
+        verbose ? (println("Iteration : $i, iteration run-time: $iterTime, total run-time: $totalTime")) : nothing
+
         # terminate if tolerance value is reached
         if residual < tol; lastIdx = uIdx; break; end
     end # main iteration loop
