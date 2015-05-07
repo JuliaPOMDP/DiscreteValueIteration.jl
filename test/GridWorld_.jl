@@ -7,20 +7,22 @@ export GridWorldMDP, GWState, GWAction
 export states, actions
 export numStates, numActions
 export reward, nextStates 
+export i2s, s2i
 
 
-using DiscreteMDP_
+using DiscreteMDPs
+using GridInterpolations
 using Iterators
 
 
-import DiscreteMDP_.DiscreteMDP
+import DiscreteMDPs.DiscreteMDP
 
-import DiscreteMDP_.reward
-import DiscreteMDP_.nextStates
-import DiscreteMDP_.states
-import DiscreteMDP_.actions
-import DiscreteMDP_.numStates
-import DiscreteMDP_.numActions
+import DiscreteMDPs.reward
+import DiscreteMDPs.nextStates
+import DiscreteMDPs.states
+import DiscreteMDPs.actions
+import DiscreteMDPs.numStates
+import DiscreteMDPs.numActions
 
 type GWState 
     x::Int64
@@ -67,6 +69,7 @@ type GridWorldMDP <: DiscreteMDP
 
     sizes::Vector
 
+    grid::RectangleGrid
 
     function GridWorldMDP(xSize::Int, ySize::Int, rewardPositions::Vector, rewardValues::Vector)
 
@@ -111,6 +114,8 @@ type GridWorldMDP <: DiscreteMDP
         self.ySteps = [0, 0, 1, -1]
 
         self.sizes = [xSize, ySize, 2, 2]
+
+        self.grid = RectangleGrid([1.:xSize], [1.:ySize], [0.,1], [0.,1])
 
         return self
     end
@@ -179,6 +184,8 @@ function nextStates(mdp::GridWorldMDP, stateIdx::Int64, actionIdx::Int64)
     ind2sub!(tempSub, sizes, stateIdx)
     rootX = tempSub[1]
     rootY = tempSub[2]
+    rootB = tempSub[3]
+    rootD = tempSub[4]
 
     tempState = mdp.tempState
     xSteps    = mdp.xSteps
@@ -189,17 +196,22 @@ function nextStates(mdp::GridWorldMDP, stateIdx::Int64, actionIdx::Int64)
         yp = rootY + ySteps[i]
         p[1] = xp
         p[2] = yp
+        tempSub[3] = rootB
+        tempSub[4] = rootD
         if !inBounds(mdp, p)
             # bumped is true
-            tempSub[3] = 1 + 1 
+            tempSub[1] = rootX
+            tempSub[2] = rootY
+            tempSub[3] = 2 
         else
             # otherwise move to the next location
             tempSub[1] = xp
             tempSub[2] = yp
+            tempSub[3] = 1
         end
         if p in mdp.endPositions
             # done is true
-            tempSub[4] = 1 + 1
+            tempSub[4] = 2 
         end
 
         states[i] = sub2ind(sizes, tempSub)
@@ -217,10 +229,8 @@ function nextStates(mdp::GridWorldMDP, state::GWState, action::GWAction)
     ys = state.y
 
     positions  = Array[[xs+1, ys], [xs-1, ys], [xs, ys+1], [xs,ys-1]]
-    bumped     = [false, false, false, false]
-    done       = [false, false, false, false]
 
-    states = [GWState([positions[i], false, false]) for i = 1:4]
+    states = [GWState([positions[i], false, state.done]) for i = 1:4]
 
     for i = 1:4
         p = [states[i].x, states[i].y]
@@ -269,6 +279,31 @@ function actionMap(a::GWAction)
     else
         return 0
     end
+end
+
+function i2s(mdp::GridWorldMDP, s::Int)
+    x = ind2x(mdp.grid, s)
+    return GWState(x[1], x[2], bool(x[3]), bool(x[4]))
+end
+
+function s2i(mdp::GridWorldMDP, s::GWState)
+    xSize = mdp.xSize
+    ySize = mdp.ySize
+    xp = s.x
+    yp = s.y
+    idx = 1
+    idx += (xp - 1) 
+    idx += (yp - 1) * xSize
+    if s.bumped && s.done
+        idx += 3 * xSize * ySize
+    elseif s.done
+        idx += 2 * xSize * ySize
+    elseif s.bumped
+        idx += xSize * ySize
+    else
+        idx += 0
+    end
+    return idx
 end
 
 

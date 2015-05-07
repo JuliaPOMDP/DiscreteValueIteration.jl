@@ -2,14 +2,14 @@
 
 module ParallelValueIteration
 
-export ParallelValueIteration
+export ParallelSolver
 export solve
 
 
-using DiscreteMDP
+using DiscreteMDPs
 
-import DiscreteMDP.Solver
-import DiscreteMDP.solve
+import DiscreteMDPs.Solver
+import DiscreteMDPs.solve
 
 
 type ParallelSolver <: Solver
@@ -28,14 +28,14 @@ end
 
 
 # returns the utility function and the Q-matrix
-function solve(solver::ParallelValueIteration, mdp::DiscreteMDP)
+function solve(solver::ParallelSolver, mdp::DiscreteMDP)
     # check gauss-seidel flag
     gs = solver.gaussSeidel
-    gs ? return solveGS(solver, mdp) : return solveRegular(solver, mdp)
+    gs ? (return solveGS(solver, mdp)) : (return solveRegular(solver, mdp))
 end
 
 
-function solveGS(solver::ParallelValueIteration, mdp::DiscreteMDP)
+function solveGS(solver::ParallelSolver, mdp::DiscreteMDP)
     # gauss-seidel does not check tolerance
     # always runs for max iterations
 
@@ -73,7 +73,7 @@ function solveGS(solver::ParallelValueIteration, mdp::DiscreteMDP)
 end
 
 
-function solveRegular(solver::ParallelValueIteration, mdp::DiscreteMDP)
+function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP)
     
     nStates  = numStates(mdp)
     nActions = numActions(mdp)
@@ -123,7 +123,7 @@ function solveRegular(solver::ParallelValueIteration, mdp::DiscreteMDP)
         # terminate if tolerance value is reached
         if residual < tol; lastIdx = uIdx; break; end
     end # main iteration loop
-    lastIdx == 1 ? return util2, valQ : return util1, valQ
+    lastIdx == 1 ? (return util2, valQ) : (return util1, valQ)
 end
 
 
@@ -141,7 +141,7 @@ function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, 
         qHi = -Inf
 
         for ai = 1:nActions
-            probs, states = nextStates(mdp, si, ai)
+            states, probs = nextStates(mdp, si, ai)
             qNow = reward(mdp, si, ai)
 
             for sp = 1:length(states)
@@ -174,7 +174,7 @@ function solveChunk(mdp::DiscreteMDP, util::SharedArray, valQ::SharedArray, stat
         qHi = -Inf
 
         for ai = 1:nActions
-            probs, states = nextStates(mdp, si, ai)
+            states, probs = nextStates(mdp, si, ai)
             qNow = reward(mdp, si, ai)
 
             for sp = 1:length(states)

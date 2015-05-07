@@ -36,8 +36,8 @@ function parallelTest(nProcs::Int, gridSize::Int; nIter::Int=1, nChunks::Int=1)
     vi = ValueIteration(nIter, tolerance)
     pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
 
-    @time q = solve(mdp, vi)
-    @time qp = solve(mdp, pvi)
+    @time q = solve(vi, mdp)
+    @time qp = solve(pvi, mdp)
     return q, qp
 end
 

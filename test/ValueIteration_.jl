@@ -6,14 +6,15 @@ export ValueIteration
 export solve
 
 
-using DiscreteMDP_
+using DiscreteMDPs
 using GridWorld_
 
 
-import DiscreteMDP_.solve
+import DiscreteMDPs.solve
+import DiscreteMDPs.Solver
 
 
-type ValueIteration <: MDPSolver
+type ValueIteration <: Solver
 
     maxIterations::Int
 
