@@ -26,6 +26,16 @@ type ParallelSolver <: Solver
 
 end
 
+type SerialSolver <: Solver
+
+    maxIterations::Int64
+
+    tolerance::Float64
+
+    gaussSiedel::Bool
+
+end
+
 
 # returns the utility function and the Q-matrix
 function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)

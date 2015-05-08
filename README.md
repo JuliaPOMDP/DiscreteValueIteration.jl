@@ -17,7 +17,7 @@ To use the ParallelValueIteration module, begin your code by adding the maximum 
 use, and export the module
 
 ```julia
-addprocs(10)
+addprocs(10) # this is the maximum number of processors you would like to use
 using ParallelValueIteration
 ```
 
@@ -32,7 +32,9 @@ nextStates(mdp::YourMDP, state, action) # returns arrays neighboring states and 
 reward(mdp::YourMDP, state, action)
 ```
 
-## Solver
+## Serial Solver
+
+## Parallel Solver
 
 The module defines a ParallelSolver type that requires a number of input arguments
 
@@ -41,11 +43,11 @@ numProcs      = 8 # numbers of processors used by the solver
 stateOrder    = {[1,1000], [1001,2000]} # ordering in which to process states
 numIterations = 10 # number of iterations in the DP loop
 tolerance     = 1e-3 # Bellman tolerance
-gsFlag        = true # flag for Gauss-Siedel iteration
+gaussSiedel   = true # flag for Gauss-Siedel iteration
 
 myMDP = AwesomeMDPType(arguments) # your MDP 
 
-pvi = ParallelSolver(numProcs, stateOrder, numIterations, tolerance, gsFlag)
+pvi = ParallelSolver(numProcs, stateOrder, numIterations, tolerance, gaussSiedel)
 (util, qMatrix) = solve(pvi, myMDP) # the solve function returns the utility function and the Q-matrix
 ```
 
