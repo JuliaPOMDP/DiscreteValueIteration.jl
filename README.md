@@ -8,7 +8,7 @@ vanilla value iteration solvers.
 Start Julia and run the following command:
 
 ```julia
-Pkg.clone
+Pkg.clone("https://github.com/sisl/ParallelValueIteration.jl")
 ```
 
 ## Usage

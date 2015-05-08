@@ -178,7 +178,6 @@ function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, 
             end
         end # action loop
         residual += (valOld[si] - valNew[si])^2
-        #valOld[si] = valNew[si]
     end # state loop
     return residual 
 end
