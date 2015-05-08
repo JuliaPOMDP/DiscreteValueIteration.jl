@@ -111,8 +111,6 @@ type GridWorldMDP <: DiscreteMDP
 
     sizes::Vector
 
-    grid::RectangleGrid
-
     function GridWorldMDP(xSize::Int, ySize::Int, rewardPositions::Vector, rewardValues::Vector)
 
         self = new()
@@ -155,8 +153,6 @@ type GridWorldMDP <: DiscreteMDP
         self.ySteps = [0, 0, 1, -1]
 
         self.sizes = [xSize, ySize, 2, 2]
-
-        self.grid = RectangleGrid([1.:xSize], [1.:ySize], [0.,1], [0.,1])
 
         return self
     end
