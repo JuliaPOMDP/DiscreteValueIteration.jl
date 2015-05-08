@@ -3,26 +3,24 @@
 
 module GridWorld_
 
-export GridWorldMDP, GWState, GWAction
+export GridWorldMDP, GWState, GWStateIter, GWAction
 export states, actions
 export numStates, numActions
 export reward, nextStates 
-export i2s, s2i
 
 
 using DiscreteMDPs
-using GridInterpolations
-using Iterators
-
 
 import DiscreteMDPs.DiscreteMDP
-
 import DiscreteMDPs.reward
 import DiscreteMDPs.nextStates
 import DiscreteMDPs.states
 import DiscreteMDPs.actions
 import DiscreteMDPs.numStates
 import DiscreteMDPs.numActions
+
+import Base.start, Base.done, Base.next # for state iterator
+
 
 type GWState 
     x::Int64
@@ -35,6 +33,50 @@ GWState(x::Vector) = GWState(x...)
 
 type GWAction 
     dir::Symbol
+end
+
+
+type GWStateIter
+    xMax::Int64
+    yMax::Int64
+end
+
+function start(iter::GWStateIter)
+    state = (1, 1, false, false)
+end
+
+function done(iter::GWStateIter, state)
+    x, y, bumped, done = state
+    if y > iter.yMax
+        return true
+    end
+
+    return false
+end
+
+function next(iter::GWStateIter, state)
+
+    x, y, bumped, done = state
+    item = GWState(x, y, bumped, done)
+
+    if x + 1 > iter.xMax
+        x = 1
+        y += 1
+    else
+        x += 1
+    end
+
+    if y > iter.yMax && !bumped
+        x = 1
+        y = 1
+        bumped = true
+    elseif y > iter.yMax && !done
+        x = 1
+        y = 1
+        done = true
+    end
+
+    return item, (x, y, bumped, done)
 end
 
 
@@ -76,7 +118,7 @@ type GridWorldMDP <: DiscreteMDP
         self = new()
 
         nStates = xSize * ySize * 2 * 2
-        stateIterator = product([1:xSize], [1:ySize], [false, true], [false, true])
+        stateIterator = GWStateIter(xSize, ySize) 
 
         self.xSize = xSize
         self.ySize = ySize
@@ -87,7 +129,6 @@ type GridWorldMDP <: DiscreteMDP
         self.nActions = 4
 
         self.stateIterator = stateIterator 
-        #self.states        = [GWState((s[1], s[2]), s[3], s[4]) for s in stateIterator]
 
         self.rewardPositions = rewardPositions 
         self.rewardValues    = rewardValues 
@@ -139,6 +180,23 @@ function numActions(mdp::GridWorldMDP)
     return mdp.nActions
 end
 
+
+# used in parallel value iteration
+function reward(mdp::GridWorldMDP, stateIdx::Int64, actionIdx::Int64)
+    sizes = mdp.sizes
+    # convert action index to action type
+    a = mdp.actions[actionIdx]
+    # convert state index to state type
+    tempSub = mdp.tempSub
+    ind2sub!(tempSub, sizes, stateIdx)
+    s = mdp.tempState
+    s.x = tempSub[1]
+    s.y = tempSub[2]
+    s.bumped = tempSub[3] - 1
+    s.done = tempSub[4] - 1
+    return reward(mdp, s, a)
+end
+
 function reward(mdp::GridWorldMDP, state::GWState, action::GWAction)
     r = 0.0
     x = state.x
@@ -158,22 +216,7 @@ function reward(mdp::GridWorldMDP, state::GWState, action::GWAction)
 end
 
 
-function reward(mdp::GridWorldMDP, stateIdx::Int64, actionIdx::Int64)
-    sizes = mdp.sizes
-    # convert action index to action type
-    a = mdp.actions[actionIdx]
-    # convert state index to state type
-    tempSub = mdp.tempSub
-    ind2sub!(tempSub, sizes, stateIdx)
-    s = mdp.tempState
-    s.x = tempSub[1]
-    s.y = tempSub[2]
-    s.bumped = tempSub[3] - 1
-    s.done = tempSub[4] - 1
-    return reward(mdp, s, a)
-end
-
-
+# used in parallel value iteration
 function nextStates(mdp::GridWorldMDP, stateIdx::Int64, actionIdx::Int64)
     states = [1,1,1,1]
 
@@ -252,6 +295,7 @@ function nextStates(mdp::GridWorldMDP, state::GWState, action::GWAction)
     return states, probs
 end
 
+
 function inBounds(mdp::GridWorldMDP, x::Int64, y::Int64)
     if 1 <= x <= mdp.xSize && 1 <= y <= mdp.ySize
         return true
@@ -279,31 +323,6 @@ function actionMap(a::GWAction)
     else
         return 0
     end
-end
-
-function i2s(mdp::GridWorldMDP, s::Int)
-    x = ind2x(mdp.grid, s)
-    return GWState(x[1], x[2], bool(x[3]), bool(x[4]))
-end
-
-function s2i(mdp::GridWorldMDP, s::GWState)
-    xSize = mdp.xSize
-    ySize = mdp.ySize
-    xp = s.x
-    yp = s.y
-    idx = 1
-    idx += (xp - 1) 
-    idx += (yp - 1) * xSize
-    if s.bumped && s.done
-        idx += 3 * xSize * ySize
-    elseif s.done
-        idx += 2 * xSize * ySize
-    elseif s.bumped
-        idx += xSize * ySize
-    else
-        idx += 0
-    end
-    return idx
 end
 
 
