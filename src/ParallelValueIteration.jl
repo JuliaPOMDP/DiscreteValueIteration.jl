@@ -126,13 +126,15 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=fa
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util1, util2, valQ, idxs)), lst)
                 residual += sum(results)
+                # update the old utility array in parallel
+                results = pmap(x -> (idxs = x; updateChunk(util1, util2, idxs)), lst)
             else
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util2, util1, valQ, idxs)), lst)
                 residual += sum(results)
+                # update the old utility array, this is computationally costly 
+                results = pmap(x -> (idxs = x; updateChunk(util2, util1, idxs)), lst)
             end
-           
-            println(results)
 
             uCount += 1
         end # chunk loop 
@@ -176,6 +178,7 @@ function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, 
             end
         end # action loop
         residual += (valOld[si] - valNew[si])^2
+        #valOld[si] = valNew[si]
     end # state loop
     return residual 
 end
@@ -210,6 +213,16 @@ function solveChunk(mdp::DiscreteMDP, util::SharedArray, valQ::SharedArray, stat
         end # action loop
     end # state loop
     return residual 
+end
+
+
+function updateChunk(utilOld::SharedArray, utilNew::SharedArray, stateIndices::(Int64, Int64))
+    sStart = stateIndices[1]
+    sEnd   = stateIndices[2]
+    for i = sStart:sEnd
+        utilOld[i] = utilNew[i]
+    end
+    return stateIndices 
 end
 
 

@@ -7,12 +7,9 @@ using Base.Test
 
 function gridWorldTest(nProcs::Int, gridSize::Int, 
                        rPos::Array, rVals::Array, file::String;
-                       nIter::Int=10, nChunks::Int=1)
+                       nIter::Int=100, nChunks::Int=1)
 
     qt = readdlm(file)
-
-    rPos  = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
-    rVals = [10.0, 3.0, -5.0, -10.0]
 
     mdp = GridWorldMDP(gridSize, gridSize, rPos, rVals)
 

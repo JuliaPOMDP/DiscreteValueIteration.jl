@@ -42,6 +42,7 @@ function solve(alg::ValueIteration, mdp::DiscreteMDP)
             for ai = 1:nActions
                 states, probs = nextStates(mdp, si, ai) 
                 qNow = reward(mdp, si, ai)
+                #println("$si, $ai, $qNow")
 
                 for sp = 1:length(states)
                     spi = states[sp] 
