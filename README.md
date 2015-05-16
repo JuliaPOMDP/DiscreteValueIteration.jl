@@ -1,7 +1,7 @@
 # ParallelValueIteration
 
-This package performs parallel value iteration on a multi-core machine. At the moment, it provides Gauss-Siedel and
-vanilla value iteration solvers.
+This package implements a value iteration solver for Markov decision processes (MDPs). A multi-core parallel is availiable as well. At the moment, Gauss-Siedel and
+vanilla value iteration solvers are provided.
 
 ## Installation
 
@@ -12,6 +12,9 @@ Pkg.clone("https://github.com/sisl/ParallelValueIteration.jl")
 ```
 
 ## Usage
+
+To use the ValueIteration module, begin your code by adding the maximum number of processors you would like to
+use, and export the module
 
 To use the ParallelValueIteration module, begin your code by adding the maximum number of processors you would like to
 use, and export the module
@@ -36,10 +39,12 @@ reward(mdp::YourMDP, state, action)
 
 ## Parallel Solver
 
-The module defines a ParallelSolver type that requires a number of input arguments
+The module defines a ParallelSolver type that has a single input argument and a number of optional arguments 
 
 ```julia
+# required input
 numProcs      = 8 # numbers of processors used by the solver
+# optional inputs
 stateOrder    = {[1,1000], [1001,2000]} # ordering in which to process states
 numIterations = 10 # number of iterations in the DP loop
 tolerance     = 1e-3 # Bellman tolerance
@@ -52,8 +57,7 @@ pvi = ParallelSolver(numProcs, stateOrder, numIterations, tolerance, gaussSiedel
 ```
 
 The state ordering is required for backwards induction value iteration, where the value function must be updated in a
-specific order. For MDPs that do not require a state ordering, the stateOrder variable can be defined in the following
-way:
+specific order. For MDPs that do not require a state ordering, the stateOrder variable is set by 
 
 ```julia
 stateOrder    = {[1,nStates]} # nStates is the total number of states in your MDP

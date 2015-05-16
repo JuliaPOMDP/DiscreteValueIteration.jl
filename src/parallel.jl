@@ -41,7 +41,7 @@ function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     nProcs < 2 ? error("Less than 2 processors not allowed") : nothing
     nProcs > maxProcs ? error("Number of requested processors is too large, try $maxProcs") : nothing
 
-    # check if a defualt state ordering is needed
+    # check if a default state ordering is needed
     order = solver.stateOrder
     if isempty(order)
         nStates = numStates(mdp)
@@ -137,13 +137,15 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=fa
             if uIdx == 1
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util1, util2, valQ, idxs)), lst)
-                residual += sum(results)
+                newResidual = maximum(results) 
+                newResidual > residual ? (residual = newResidual) : (nothing) 
                 # update the old utility array in parallel
                 results = pmap(x -> (idxs = x; updateChunk(util1, util2, idxs)), lst)
             else
                 # returns the residual
                 results = pmap(x -> (idxs = x; solveChunk(mdp, util2, util1, valQ, idxs)), lst)
-                residual += sum(results)
+                newResidual = maximum(results) 
+                newResidual > residual ? (residual = newResidual) : (nothing) 
                 # update the old utility array, this is computationally costly 
                 results = pmap(x -> (idxs = x; updateChunk(util2, util1, idxs)), lst)
             end
@@ -189,7 +191,8 @@ function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, 
                 valNew[si] = qHi
             end
         end # action loop
-        residual += (valOld[si] - valNew[si])^2
+        newResidual = (valOld[si] - valNew[si])^2
+        newResidual > residual ? (residual = newResidual) : (nothing)
     end # state loop
     return residual 
 end
@@ -227,6 +230,7 @@ function solveChunk(mdp::DiscreteMDP, util::SharedArray, valQ::SharedArray, stat
 end
 
 
+# for updating the utility array in parallel
 function updateChunk(utilOld::SharedArray, utilNew::SharedArray, stateIndices::(Int64, Int64))
     sStart = stateIndices[1]
     sEnd   = stateIndices[2]
