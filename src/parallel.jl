@@ -23,9 +23,9 @@ end
 
 # over-loaded constructor
 function ParallelSolver(numProcessors::Int64; stateOrder::Vector=[], maxIterations::Int64=1000,
-                        tolerance::Float64=1e-3, gaussSeidel::Bool=true,
+                        tolerance::Float64=1e-3, gaussSiedel::Bool=true,
                         includeV::Bool=true, includeQ::Bool=true, includeA::Bool=true)
-    return ParallelSolver(numProcessors, stateOrder, maxIterations, tolerance, gaussSeidel, includeV, includeQ, includeA)     
+    return ParallelSolver(numProcessors, stateOrder, maxIterations, tolerance, gaussSiedel, includeV, includeQ, includeA)     
 end
 
 
@@ -45,11 +45,11 @@ function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
         solver.stateOrder = {[1:nStates]}
     end
 
-    # check gauss-seidel flag
     gs = solver.gaussSeidel
     u = []
     q = []
 
+    # check gauss-seidel flag
     if gs
         u, q = solveGS(solver, mdp, verbose=verbose)
     else
@@ -58,7 +58,12 @@ function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
 
     p = []
 
-    policy = DiscretePolicy(V=u, Q=q)
+    # check policy flag
+    if solver.includeA
+        p = computePolicy(mdp, u)
+    end
+
+    policy = DiscretePolicy(V=u, Q=q, P=p)
 
     return policy 
 end

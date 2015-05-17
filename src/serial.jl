@@ -17,7 +17,7 @@ type SerialSolver <: Solver
 end
 
 
-function SerialSolver(;maxIterations::Int64=1000, tolerance::Int64=1e-3, gaussSiedel::Bool=true,
+function SerialSolver(;maxIterations::Int64=1000, tolerance::Float64=1e-3, gaussSiedel::Bool=true,
                        includeV::Bool=true, includeQ::Bool=true, includeA::Bool=true)
     return SerialSolver(maxIterations, tolerance, gaussSiedel, includeV, includeQ, includeA)
 end
@@ -36,8 +36,12 @@ function solve(solver::SerialSolver, mdp::DiscreteMDP; verbose::Bool=false)
     end
 
     p = []
+    # check policy flag
+    if solver.includeA
+        p = computePolicy(mdp, u)
+    end
 
-    policy = DiscretePolicy(V=u, Q=q)
+    policy = DiscretePolicy(V=u, Q=q, P=p)
 
     return policy
 end
@@ -48,8 +52,8 @@ function solveGS(solver::SerialSolver, mdp::DiscreteMDP; verbose::Bool=false)
     nStates  = numStates(mdp)
     nActions = numActions(mdp)
 
-    maxIter = alg.maxIterations
-    tol     = alg.tolerance
+    maxIter = solver.maxIterations
+    tol     = solver.tolerance
 
     valU = zeros(nStates)
     valQ = zeros(nActions, nStates)

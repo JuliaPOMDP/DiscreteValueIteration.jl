@@ -5,7 +5,7 @@ using GridWorld_
 using Base.Test
 
 
-function gridWorldTest(nProcs::Int, gridSize::Int, 
+function parallelGridWorldTest(nProcs::Int, gridSize::Int, 
                        rPos::Array, rVals::Array, file::String;
                        nIter::Int=100, nChunks::Int=1)
 
@@ -32,7 +32,8 @@ function gridWorldTest(nProcs::Int, gridSize::Int,
 
     # test gauss-siedel
     gauss_siedel_flag = true
-    pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
+    pvi = ParallelSolver(nProcs, stateOrder=order, maxIterations=nIter, 
+                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA=false)
     policy = solve(pvi, mdp)
     qp = policy.Q
 
@@ -41,8 +42,10 @@ function gridWorldTest(nProcs::Int, gridSize::Int,
 
     # test regualr
     gauss_siedel_flag = false
-    pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
-    (utilp, qp) = solve(pvi, mdp)
+    pvi = ParallelSolver(nProcs, stateOrder=order, maxIterations=nIter, 
+                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA=false)
+    policy = solve(pvi, mdp)
+    pq = policy.Q
 
     @test_approx_eq_eps qt qp 1.0
 
@@ -50,11 +53,34 @@ function gridWorldTest(nProcs::Int, gridSize::Int,
 end
 
 
+function serialGridWorldTest(gridSize::Int64, rPos::Array, rVals::Array, file::String; nIter::Int64=100)
+
+    qt = readdlm(file)
+
+    mdp = GridWorldMDP(gridSize, gridSize, rPos, rVals)
+
+    nStates  = numStates(mdp)
+    nActions = numActions(mdp)
+
+    tolerance = 1e-10
+
+    gauss_siedel_flag = true
+    vi = SerialSolver(maxIterations=nIter, tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA = false)
+    policy = solve(vi, mdp)
+    q = policy.Q
+
+    @test_approx_eq_eps qt q 1.0
+
+    return true
+end
+
+
 rPos     = Array{Int64,1}[[8,9], [3,8], [5,4], [8,4]]
 rVals    = [10.0, 3.0, -5.0, -10.0]
-nProcs   = int(CPU_CORES/2) - 1
+nProcs   = int(CPU_CORES/2)
 file     = "grid-world-10x10-Q-matrix.txt"
 gridSize = 10
 
-@test gridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
-@test gridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true
+@test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
+@test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true
+@test serialGridWorldTest(gridSize, rPos, rVals, file) == true
