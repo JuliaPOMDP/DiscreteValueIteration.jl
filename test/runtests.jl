@@ -1,6 +1,6 @@
 addprocs(int(CPU_CORES/2)-1)
 
-using ParallelValueIteration
+using DiscreteValueIteration
 using GridWorld_
 using Base.Test
 
