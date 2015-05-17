@@ -1,16 +1,4 @@
-# multi-core, single machine parallel value iteration solver
-
-module ParallelValueIteration
-
-export ParallelSolver
-export solve
-
-
-using DiscreteMDPs
-
-import DiscreteMDPs.Solver
-import DiscreteMDPs.solve
-
+# implements a multi-core, single machine parallel value iteration solver
 
 type ParallelSolver <: Solver
 
@@ -24,11 +12,20 @@ type ParallelSolver <: Solver
 
     gaussSeidel::Bool # flag for gauss-seidel value iteration (regular uses x2 more memory)
 
-    function ParallelSolver(numProcessors::Int64; stateOrder::Vector=[], maxIterations::Int64=1000,
-                            tolerance::Float64=1e-3, gaussSeidel::Bool=true)
-        return ParallelSolver(numProcessors, stateOrder, maxIterations, tolerance, gaussSeidel)     
-    end
+    includeV::Bool # flag for including the utility array
 
+    includeQ::Bool # flag for including the Q-matrix
+
+    includeA::Bool # flag for including the policy
+ 
+end
+
+
+# over-loaded constructor
+function ParallelSolver(numProcessors::Int64; stateOrder::Vector=[], maxIterations::Int64=1000,
+                        tolerance::Float64=1e-3, gaussSeidel::Bool=true,
+                        includeV::Bool=true, includeQ::Bool=true, includeA::Bool=true)
+    return ParallelSolver(numProcessors, stateOrder, maxIterations, tolerance, gaussSeidel, includeV, includeQ, includeA)     
 end
 
 
@@ -50,7 +47,20 @@ function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
 
     # check gauss-seidel flag
     gs = solver.gaussSeidel
-    gs ? (return solveGS(solver, mdp, verbose=verbose)) : (return solveRegular(solver, mdp, verbose=verbose))
+    u = []
+    q = []
+
+    if gs
+        u, q = solveGS(solver, mdp, verbose=verbose)
+    else
+        u, q = solveRegular(solver, mdp, verbose=verbose)
+    end
+
+    p = []
+
+    policy = DiscretePolicy(V=u, Q=q)
+
+    return policy 
 end
 
 
@@ -266,8 +276,5 @@ function chunkOrdering(nProcs::Int64, order::Vector)
     end
     return chunks
 end
-
-
-end # module
 
 

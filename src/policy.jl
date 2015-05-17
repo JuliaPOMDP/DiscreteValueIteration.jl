@@ -1,44 +1,53 @@
 
-type DiscretePolicy{T} <: Policy
+type DiscretePolicy{VT, QT, PT} <: Policy
 
-    V::DenseArray{T} # utility function
-    Q::DenseArray{T} # Q-matrix
-    policy::Vector{Int64} 
+    V::DenseArray{VT} # utility function
+    Q::DenseArray{QT} # Q-matrix
+    policy::DenseArray{PT} # policy computed from the utility
+end
 
-    includeV::Bool # flag for including the utility
-    includeQ::Bool # flag for including the Q-matrix
-    includeA::Bool # flag for including the policy
+function DiscretePolicy(;V::DenseArray=[], Q::DenseArray=[], P::DenseArray=[])
 
-    function DiscretePolicy(;valType::Float64)
+    vt = Any
+    qt = Any
+    pt = Any
 
+    !isempty(V) ? (vt = typeof(V[1])) : (nothing)
+    !isempty(Q) ? (qt = typeof(Q[1])) : (nothing)
+    !isempty(P) ? (pt = typeof(P[1])) : (nothing)
+
+    return DiscretePolicy{vt, qt, pt}(V, Q, P)
 end
 
 
 function action(p::DiscretePolicy, s::Int64)
 
-    if !p.includeA
+    policy = p.policy
+    if isempty(policy) 
         error("$(typeof(p)) has an empty policy array")
     end
 
-    return p.policy[s]
+    return policy[s]
 end
 
 
 function value(p::DiscretePolicy, s::Int64, a::Int64)
 
-    if !p.includeQ
+    Q = p.Q
+    if isempty(Q)
         error("$(typeof(p)) has an empty Q-matrix")
     end
 
-    return p.Q[s,a]
+    return Q[a,s]
 end
 
 
 function value(p::DiscretePolicy, s::Int64)
     
-    if !p.includeV
+    V = p.V
+    if isempty(V) 
         error("$(typeof(p)) has an empty optimal value array")
     end
 
-    return p.V[s]
+    return V[s]
 end

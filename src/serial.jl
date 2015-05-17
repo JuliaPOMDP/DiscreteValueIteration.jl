@@ -8,17 +8,38 @@ type SerialSolver <: Solver
 
     gaussSiedel::Bool
 
-    function SerialSolver(;maxIterations::Int64=1000, tolerance::Int64=1e-3, gaussSiedel::Bool=true)
-        return SerialSolver(maxIterations, tolerance, gaussSiedel)
-    end
+    includeV::Bool
+
+    includeQ::Bool
+
+    includeA::Bool
+
+end
+
+
+function SerialSolver(;maxIterations::Int64=1000, tolerance::Int64=1e-3, gaussSiedel::Bool=true,
+                       includeV::Bool=true, includeQ::Bool=true, includeA::Bool=true)
+    return SerialSolver(maxIterations, tolerance, gaussSiedel, includeV, includeQ, includeA)
 end
 
 
 function solve(solver::SerialSolver, mdp::DiscreteMDP; verbose::Bool=false)
 
     gs = solver.gaussSiedel
-    gs ? (u, q = solveGS(solver, mdp, verbose=verbose)) : (u, q = solveRegular(solver, mdp, verbose=verbose))
+    u = []
+    q = []
 
+    if gs
+        u, q = solveGS(solver, mdp, verbose=verbose)
+    else
+        u, q = solveRegular(solver, mdp, verbose=verbose)
+    end
+
+    p = []
+
+    policy = DiscretePolicy(V=u, Q=q)
+
+    return policy
 end
 
 

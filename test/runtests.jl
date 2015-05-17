@@ -33,7 +33,8 @@ function gridWorldTest(nProcs::Int, gridSize::Int,
     # test gauss-siedel
     gauss_siedel_flag = true
     pvi = ParallelSolver(nProcs, order, nIter, tolerance, gauss_siedel_flag)
-    (utilp, qp) = solve(pvi, mdp)
+    policy = solve(pvi, mdp)
+    qp = policy.Q
 
     @test_approx_eq_eps qt qp 1.0
 
