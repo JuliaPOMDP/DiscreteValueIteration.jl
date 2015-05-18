@@ -56,7 +56,6 @@ To solve the MDP:
 
 ```julia
 mdp = AwesomeMDPType(arguments) # your MDP 
-
 policy = solve(solver, mdp) # solve using value iteration
 ```
 
@@ -70,7 +69,6 @@ The following two arguments are availiable in addition to the ones defined for t
 numProcs      = 8 # numbers of processors used by the solver
 # optional input
 stateOrder = {[1,250],[251,500]} # default ordering is {[1,numStates]}
-
 solver = ParallelSolver(numProcs, stateOrder=stateOrder, maxIterations=maxIterations,
                         tolerance=tolerance, gaussSiedel=gs,
                         includeV=includeV, includeQ=includeQ, includeA=includeA)
@@ -90,7 +88,7 @@ a = 1
 u  = value(policy, s) # expected optimal value for state s
 q  = value(policy, s, a) # expected value for state-action pair
 ap = action(policy, s) # action that maximizes the expected utility
-```julia
+```
 
 
 ## Tutorial
