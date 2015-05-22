@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/sisl/DiscreteValueIteration.jl.svg?branch=master)](https://travis-ci.org/sisl/DiscreteValueIteration.jl)
-[![Coverage Status](https://coveralls.io/repos/sisl/DiscreteValueIteration.jl/badge.png)](https://coveralls.io/r/sisl/DiscreteValueIteration.jl)
+[![Coverage Status](https://coveralls.io/repos/sisl/DiscreteValueIteration.jl/badge.svg)](https://coveralls.io/r/sisl/DiscreteValueIteration.jl)
 
 # DiscreteValueIteration
 
