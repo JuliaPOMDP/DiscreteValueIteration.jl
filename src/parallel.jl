@@ -42,7 +42,7 @@ function solve(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     order = solver.stateOrder
     if isempty(order)
         nStates = numStates(mdp)
-        solver.stateOrder = {[1,nStates]}
+        solver.stateOrder = {1:nStates}
     end
 
     gs = solver.gaussSeidel

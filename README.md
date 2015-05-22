@@ -68,7 +68,7 @@ The following two arguments are availiable in addition to the ones defined for t
 # required input
 numProcs      = 8 # numbers of processors used by the solver
 # optional input
-stateOrder = {[1,250],[251,500]} # default ordering is {[1,numStates]}
+stateOrder = {1:250,251:500} # default ordering is {1:numStates}
 solver = ParallelSolver(numProcs, stateOrder=stateOrder, maxIterations=maxIterations,
                         tolerance=tolerance, gaussSiedel=gs,
                         includeV=includeV, includeQ=includeQ, includeA=includeA)

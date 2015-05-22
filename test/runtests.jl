@@ -32,7 +32,7 @@ function parallelGridWorldTest(nProcs::Int, gridSize::Int,
     # test gauss-siedel
     gauss_siedel_flag = true
     pvi = ParallelSolver(nProcs, stateOrder=order, maxIterations=nIter, 
-                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA=false)
+                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag)
     policy = solve(pvi, mdp)
     qp = policy.Q
 
@@ -42,7 +42,7 @@ function parallelGridWorldTest(nProcs::Int, gridSize::Int,
     # test regualr
     gauss_siedel_flag = false
     pvi = ParallelSolver(nProcs, stateOrder=order, maxIterations=nIter, 
-                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA=false)
+                         tolerance=tolerance, gaussSiedel=gauss_siedel_flag)
     policy = solve(pvi, mdp)
     pq = policy.Q
 
@@ -64,7 +64,7 @@ function serialGridWorldTest(gridSize::Int64, rPos::Array, rVals::Array, file::S
     tolerance = 1e-10
 
     gauss_siedel_flag = true
-    vi = SerialSolver(maxIterations=nIter, tolerance=tolerance, gaussSiedel=gauss_siedel_flag, includeA = false)
+    vi = SerialSolver(maxIterations=nIter, tolerance=tolerance, gaussSiedel=gauss_siedel_flag)
     policy = solve(vi, mdp)
     q = policy.Q
 
@@ -84,5 +84,7 @@ gridSize = 10
 if (CPU_CORES > 1)
     @test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
     @test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true
+    println("Finished parallel tests")
 end
 @test serialGridWorldTest(gridSize, rPos, rVals, file) == true
+println("Finished serial tests")
