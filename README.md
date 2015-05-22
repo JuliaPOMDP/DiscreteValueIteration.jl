@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/sisl/DiscreteValueIteration.jl.svg?branch=master)](https://travis-ci.org/sisl/DiscreteValueIteration.jl)
+[![Coverage Status](https://coveralls.io/repos/sisl/DiscreteValueIteration.jl/badge.png)](https://coveralls.io/r/sisl/DiscreteValueIteration.jl)
+
 # DiscreteValueIteration
 
 This package implements a value iteration solver for Markov decision processes (MDPs). A multi-core parallel is availiable as well. At the moment, Gauss-Siedel and
