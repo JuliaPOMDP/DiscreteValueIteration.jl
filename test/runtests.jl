@@ -1,7 +1,7 @@
 addprocs(int(CPU_CORES/2)-1)
 
 using DiscreteValueIteration
-using GridWorld_
+using GridWorlds
 using Base.Test
 
 

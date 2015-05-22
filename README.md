@@ -93,7 +93,7 @@ ap = action(policy, s) # action that maximizes the expected utility
 
 ## Tutorial
 
-An ijulia notebook tutorial is availiable with more details:
+An IJulia notebook tutorial is availiable with more details:
 
 [Tutorial](http://nbviewer.ipython.org/github/sisl/DiscreteValueIteration.jl/blob/master/test/Discrete-Value-Iteration.ipynb)
 

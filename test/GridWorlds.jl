@@ -1,7 +1,7 @@
 
 # gridworld mdp module
 
-module GridWorld_
+module GridWorlds
 
 export GridWorldMDP, GWState, GWStateIter, GWAction
 export states, actions
