@@ -84,9 +84,6 @@ function solveGS(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     nChunks = length(solver.stateOrder)
     order   = solver.stateOrder
 
-    # state chunks split between each worker
-    chunks = chunkOrdering(nProcs, order)
-
     # shared utility function and Q-matrix
     util = SharedArray(Float64, (nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
     valQ  = SharedArray(Float64, (nActions, nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
@@ -97,7 +94,7 @@ function solveGS(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=false)
     for i = 1:maxIter
         tic()
         for c = 1:nChunks
-            lst = chunks[c]
+            lst = segment(nProcs, order[c])
 
             # no residuals, so results are 0.0
             results = pmap(x -> (idxs = x; solveChunk(mdp, util, valQ, idxs)), lst)
@@ -126,9 +123,6 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=fa
     nChunks = length(solver.stateOrder)
     order   = solver.stateOrder
 
-    # state chunks split between each worker
-    chunks = chunkOrdering(nProcs, order)
-
     # shared utility function and Q-matrix
     util1 = SharedArray(Float64, (nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
     util2 = SharedArray(Float64, (nStates), init = S -> S[localindexes(S)] = 0.0, pids = [1:nProcs])
@@ -147,7 +141,7 @@ function solveRegular(solver::ParallelSolver, mdp::DiscreteMDP; verbose::Bool=fa
         for c = 1:nChunks
             # util array to update: 1 or 2
             uIdx = uCount % 2 + 1
-            lst = chunks[c]
+            lst = segment(nProcs, order[c])
 
             if uIdx == 1
                 # returns the residual
@@ -181,15 +175,12 @@ end
 
 # updates the shared array utility and returns the residual
 # valOld is used to update, and valNew is the updated value function
-function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, valQ::SharedArray, stateIndices::(Int64, Int64))
+function solveChunk(mdp::DiscreteMDP, valOld::SharedArray, valNew::SharedArray, valQ::SharedArray, iter::UnitRange)
 
-    sStart = stateIndices[1]
-    sEnd   = stateIndices[2]
-    nActions = mdp.nActions
-
+    nActions = numActions(mdp)
     residual = 0.0
 
-    for si = sStart:sEnd
+    for si = iter
         qHi = -Inf
 
         for ai = 1:nActions
@@ -214,16 +205,14 @@ end
 
 
 # updates shared utility and Q-Matrix for gauss-sidel value iteration
-function solveChunk(mdp::DiscreteMDP, util::SharedArray, valQ::SharedArray, stateIndices::(Int64, Int64))
+function solveChunk(mdp::DiscreteMDP, util::SharedArray, valQ::SharedArray, iter::UnitRange)
 
-    sStart = stateIndices[1]
-    sEnd   = stateIndices[2]
-    nActions = mdp.nActions
+    nActions = numActions(mdp)
 
     # no residual for gauss-siedel
     residual = 0.0
 
-    for si = sStart:sEnd
+    for si = iter
         qHi = -Inf
 
         for ai = 1:nActions
@@ -246,40 +235,11 @@ end
 
 
 # for updating the utility array in parallel
-function updateChunk(utilOld::SharedArray, utilNew::SharedArray, stateIndices::(Int64, Int64))
-    sStart = stateIndices[1]
-    sEnd   = stateIndices[2]
-    for i = sStart:sEnd
+function updateChunk(utilOld::SharedArray, utilNew::SharedArray, iter::UnitRange)
+    for i = iter
         utilOld[i] = utilNew[i]
     end
-    return stateIndices 
-end
-
-
-# returns an array of start and end indices for each chunk
-function chunkOrdering(nProcs::Int64, order::Vector)
-    nChunks = length(order)
-    # start and end indices
-    chunks = Array(Vector{(Int64, Int64)}, nChunks) 
-    for i = 1:nChunks
-        co = order[i]
-        sIdx = co[1]
-        eIdx = co[2]
-        ns = eIdx - sIdx
-        # divide the work among the processors
-        stride = int(ns / (nProcs-1))
-        temp = (Int64, Int64)[]
-        for j = 0:(nProcs-2)
-            si = j * stride + sIdx
-            ei = si + stride - 1
-            if j == (nProcs-2) 
-                ei = eIdx
-            end
-            push!(temp, (si ,ei))
-        end
-        chunks[i] = temp
-    end
-    return chunks
+    return iter
 end
 
 

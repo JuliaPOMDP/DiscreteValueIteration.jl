@@ -1,4 +1,4 @@
-addprocs(int(CPU_CORES/2)-1)
+addprocs(int(CPU_CORES)-1)
 
 using DiscreteValueIteration
 using GridWorlds
@@ -16,7 +16,7 @@ function parallelGridWorldTest(nProcs::Int, gridSize::Int,
     nStates  = numStates(mdp)
     nActions = numActions(mdp)
 
-    order = Array(Vector{Int}, nChunks)
+    order = {}
     stride = int(nStates/nChunks)
     for i = 0:(nChunks-1)
         sIdx = i * stride + 1
@@ -24,8 +24,7 @@ function parallelGridWorldTest(nProcs::Int, gridSize::Int,
         if i == (nChunks-1) && eIdx != nStates
             eIdx = nStates
         end
-        order[i+1] = [sIdx, eIdx] 
-
+        push!(order, sIdx:eIdx)
     end
 
     tolerance = 1e-10
@@ -81,6 +80,9 @@ nProcs   = int(CPU_CORES/2)
 file     = "grid-world-10x10-Q-matrix.txt"
 gridSize = 10
 
-@test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
-@test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true
+# run parallel tests only on multi-core machines
+if (CPU_CORES > 1)
+    @test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file) == true
+    @test parallelGridWorldTest(nProcs, gridSize, rPos, rVals, file, nChunks=2) == true
+end
 @test serialGridWorldTest(gridSize, rPos, rVals, file) == true

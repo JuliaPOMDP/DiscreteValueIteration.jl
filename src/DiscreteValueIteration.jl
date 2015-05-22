@@ -10,6 +10,7 @@ import DiscreteMDPs.Policy
 import DiscreteMDPs.action
 import DiscreteMDPs.value
 
+include("helpers.jl")
 include("policy.jl")
 include("serial.jl")
 include("parallel.jl")

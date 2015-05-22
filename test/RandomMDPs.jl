@@ -1,6 +1,4 @@
-
-
-module RandomMDP_
+module RandomMDPs
 
 
 export RandomMDP
