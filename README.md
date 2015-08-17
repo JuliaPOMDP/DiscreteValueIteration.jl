@@ -3,7 +3,7 @@
 
 # DiscreteValueIteration
 
-This package implements a discrete value iteration solver in Julia for Markov decision processes (MDPs). A multi-core parallel is availiable as well. At the moment, Gauss-Siedel and
+This package implements a discrete value iteration solver in Julia for Markov decision processes (MDPs). The API used in this solver is defined in [POMDPs.jl](https://github.com/sisl/POMDPs.jl). A multi-core parallel solver is availiable as well. At the moment, Gauss-Siedel and
 vanilla value iteration solvers are provided.
 
 ## Installation
@@ -14,7 +14,7 @@ Start Julia and run the following command:
 Pkg.clone("https://github.com/sisl/DiscreteValueIteration.jl")
 ```
 
-Note that DiscreteMDPs.jl is required to use this module. 
+
 
 ## Usage
 
