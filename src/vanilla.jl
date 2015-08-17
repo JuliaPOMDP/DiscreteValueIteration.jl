@@ -19,11 +19,11 @@ type ValueIterationPolicy <: Policy
     action_map::Vector{Action}
     include_Q::Bool
     # constructor with an option to pass in generated alpha vectors
-    function ValueIterationPolicy(pomdp::POMDP; 
+    function ValueIterationPolicy(mdp::POMDP; 
                                   utility::Vector{Float64}=Array(Float64,0),
                                   include_Q::Bool=false)
-        ns = n_states(pomdp)
-        na = n_actions(pomdp)
+        ns = n_states(mdp)
+        na = n_actions(mdp)
         self = new()
         if !isempty(utility)
             @assert size(utilty) == ns "Input utility dimension mismatch"
@@ -32,7 +32,7 @@ type ValueIterationPolicy <: Policy
             self.util = zeros(ns)
         end
         am = Action[]
-        space = actions(pomdp)
+        space = actions(mdp)
         for a in domain(space)
             push!(am, a)
         end
@@ -45,12 +45,12 @@ type ValueIterationPolicy <: Policy
 end
 
 
-function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, pomdp::POMDP; verbose::Bool=false)
+function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp::POMDP; verbose::Bool=false)
 
     # solver parameters
     max_iterations = solver.max_iterations
     tolerance = solver.tolerance
-    discount_factor = discount(pomdp)
+    discount_factor = discount(mdp)
 
     # intialize the utility and Q-matrix
     util = policy.util
@@ -59,11 +59,11 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, pomd
     pol = policy.policy 
 
     # pre-allocate the transtion distirbution and the interpolants
-    dist = create_transition_distribution(pomdp)
+    dist = create_transition_distribution(mdp)
 
     # initalize space
-    sspace = states(pomdp)
-    aspace = actions(pomdp)
+    sspace = states(mdp)
+    aspace = actions(mdp)
 
     total_time = 0.0
     iter_time = 0.0
@@ -75,19 +75,19 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, pomd
         # state loop
         for (istate, s) in enumerate(domain(sspace))
             old_util = util[istate] # for residual 
-            actions!(aspace, pomdp, s)
+            actions!(aspace, mdp, s)
             max_util = -Inf
             # action loop
             # util(s) = R(s,a) + discount_factor * sum(T(s'|s,a)util(s')
             for (iaction, a) in enumerate(domain(aspace))
-                transition!(dist, pomdp, s, a) # fills distribution over neighbors
+                transition!(dist, mdp, s, a) # fills distribution over neighbors
                 u = 0.0
                 for j = 1:length(dist)
                     p = weight(dist, j)
                     sidx = index(dist, j)
                     u += p * util[sidx]
                 end
-                new_util = reward(pomdp, s, a) + discount_factor * u
+                new_util = reward(mdp, s, a) + discount_factor * u
                 if new_util > max_util
                     max_util = new_util
                     pol[istate] = iaction
@@ -106,3 +106,10 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, pomd
     end # main
     policy
 end
+
+function action(policy::ValueIterationPolicy, s::Int64)
+    aidx = policy.policy[s]
+    return action_map[aidx]
+end
+
+value(policy::ValueIterationPolicy, s::Int64) = policy.util[s]
