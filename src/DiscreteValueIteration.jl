@@ -2,23 +2,17 @@
 
 module DiscreteValueIteration
 
-using DiscreteMDPs
+using POMDPs
 
-import DiscreteMDPs.Solver
-import DiscreteMDPs.solve
-import DiscreteMDPs.Policy
-import DiscreteMDPs.action
-import DiscreteMDPs.value
+import POMDPs: Solver, solve!, Policy, action, value 
 
-include("helpers.jl")
-include("policy.jl")
-include("serial.jl")
-include("parallel.jl")
+export 
+    ValueIterationPolicy,
+    ValueIterationSolver,
+    solve!
 
-export ParallelSolver
-export SerialSolver
-export solve
-export DiscretePolicy
-export action, value
+typealias Action Any
+
+include("vanilla.jl")
 
 end # module
