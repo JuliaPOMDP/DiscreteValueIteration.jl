@@ -109,7 +109,7 @@ end
 
 function action(policy::ValueIterationPolicy, s::Int64)
     aidx = policy.policy[s]
-    return action_map[aidx]
+    return policy.action_map[aidx]
 end
 
 value(policy::ValueIterationPolicy, s::Int64) = policy.util[s]

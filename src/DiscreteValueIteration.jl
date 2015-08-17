@@ -9,7 +9,9 @@ import POMDPs: Solver, solve!, Policy, action, value
 export 
     ValueIterationPolicy,
     ValueIterationSolver,
-    solve!
+    solve!,
+    action,
+    value
 
 typealias Action Any
 
