@@ -21,7 +21,7 @@ type ValueIterationPolicy <: Policy
     # constructor with an option to pass in generated alpha vectors
     function ValueIterationPolicy(mdp::POMDP; 
                                   utility::Vector{Float64}=Array(Float64,0),
-                                  include_Q::Bool=false)
+                                  include_Q::Bool=true)
         ns = n_states(mdp)
         na = n_actions(mdp)
         self = new()
@@ -42,8 +42,23 @@ type ValueIterationPolicy <: Policy
         self.include_Q = include_Q
         return self
     end
+    function ValueIterationPolicy(q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64}, am::Vector{Action})
+        return ValueIterationPolicy(q, util, policy, am, true)
+    end
+    function ValueIterationPolicy(q::Matrix{Float64})
+        (ns, na) = size(q)
+        p = zeros(ns)
+        u = zeros(ns)
+        for i = 1:ns
+            p[i] = indmax(q[ns,:])
+            u[i] = maximum(q[ns,:])
+        end
+    end
 end
 
+function locals(p::ValueIterationPolicy)
+    return (p.qmat,p.util,p.policy,p.action_map)
+end
 
 function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp::POMDP; verbose::Bool=false)
 
@@ -108,6 +123,8 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp:
 end
 
 function action(policy::ValueIterationPolicy, s::Int64)
+    am = policy.action_map
+    isempty(am) ? return policy.policy[s] : nothing
     aidx = policy.policy[s]
     return policy.action_map[aidx]
 end
