@@ -53,6 +53,8 @@ type ValueIterationPolicy <: Policy
             p[i] = indmax(q[ns,:])
             u[i] = maximum(q[ns,:])
         end
+        am = Any[]
+        return ValueIterationPolicy(q, u, p, am, true)
     end
 end
 
@@ -124,7 +126,7 @@ end
 
 function action(policy::ValueIterationPolicy, s::Int64)
     am = policy.action_map
-    isempty(am) ? return policy.policy[s] : nothing
+    isempty(am) ? (return policy.policy[s]) : nothing
     aidx = policy.policy[s]
     return policy.action_map[aidx]
 end
