@@ -43,7 +43,13 @@ type ValueIterationPolicy <: Policy
         return self
     end
     function ValueIterationPolicy(q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64}, am::Vector{Action})
-        return ValueIterationPolicy(q, util, policy, am, true)
+        self = new()
+        self.qmat = q
+        self.util = util
+        self.policy = policy
+        self.action_map = am
+        self. include_Q = true
+        return self
     end
     function ValueIterationPolicy(q::Matrix{Float64})
         (ns, na) = size(q)
@@ -54,7 +60,13 @@ type ValueIterationPolicy <: Policy
             u[i] = maximum(q[ns,:])
         end
         am = Any[]
-        return ValueIterationPolicy(q, u, p, am, true)
+        self = new()
+        self.qmat = q
+        self.util = u
+        self.policy = p
+        self.action_map = am
+        self. include_Q = true
+        return self
     end
 end
 
@@ -125,8 +137,6 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp:
 end
 
 function action(policy::ValueIterationPolicy, s::Int64)
-    am = policy.action_map
-    isempty(am) ? (return policy.policy[s]) : nothing
     aidx = policy.policy[s]
     return policy.action_map[aidx]
 end
