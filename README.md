@@ -36,7 +36,7 @@ weight(d::AbstractDistribution, i::Int64) # returns the weight(probability) of t
 create_transition_distribution(mdp::POMDP) # initializes a distirbution over states
 ```
 
-Once the abovr functions are defined, the solver can be called with the following syntax:
+Once the above functions are defined, the solver can be called with the following syntax:
 
 ```julia
 using MyMDP # module containing your MDP type and the associated functions
