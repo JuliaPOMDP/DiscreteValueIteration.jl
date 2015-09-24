@@ -36,6 +36,18 @@ weight(d::AbstractDistribution, i::Int64) # returns the weight(probability) of t
 create_transition_distribution(mdp::POMDP) # initializes a distirbution over states
 ```
 
+Once the abovr functions are defined, the solver can be called with the following syntax:
+
+```julia
+using MyMDP # module containing your MDP type and the associated functions
+using DiscreteValueIteration
+
+mdp = MyMDP() # initializes the MDP
+solver = ValueIterationSolver(max_iterations=100, belres=1e-6) # initializes the Solver type
+policy = ValueIterationPolicy(mdp) # initializes the policy type
+solve(solver, mdp, policy, verbose=true) # runs value iterations
+```
+
 <!---
 To use the DiscreteValueIteration module, begin your code by adding the maximum number of processors you would like to
 use, and export the module
