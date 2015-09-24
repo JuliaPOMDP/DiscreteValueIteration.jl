@@ -95,7 +95,6 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-#function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp::POMDP; verbose::Bool=false)
 function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(solver, mdp); verbose::Bool=false)
 
     # solver parameters
@@ -145,7 +144,7 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
                     pol[istate] = iaction
                 end
                 include_Q ? (qmat[istate, iaction] = new_util) : nothing
-            end # actiom
+            end # action
             # update the value array
             util[istate] = max_util 
             diff = abs(max_util - old_util)
@@ -164,7 +163,7 @@ function action(mdp::POMDP, policy::ValueIterationPolicy, s::State)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
-function value(policy::ValueIterationPolicy, s::State)
+function value(mdp::POMDP, policy::ValueIterationPolicy, s::State)
     sidx = index(policy.pomdp)
     policy.util[sidx]
 end
