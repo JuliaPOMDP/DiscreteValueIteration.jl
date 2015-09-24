@@ -123,7 +123,7 @@ u  = value(policy, s) # expected optimal value for state s
 q  = value(policy, s, a) # expected value for state-action pair
 ap = action(policy, s) # action that maximizes the expected utility
 ```
--->
+
 
 ## Tutorial
 
@@ -134,3 +134,4 @@ An IJulia notebook tutorial is availiable with more details:
 ## Improving Performance
 
 - The MDP type should be small (in memory size), to avoid unnecessary data copying to each processor
+-->
