@@ -4,7 +4,7 @@
 # The following functions are required to use this solver:
 # 
 #
-
+#
 #####################################################################
 
 # The solver type 
@@ -24,7 +24,6 @@ type ValueIterationPolicy <: Policy
     policy::Vector{Int64} # Policy array, maps state index to action index
     action_map::Vector{Action} # Maps the action index to the concrete action type
     include_Q::Bool # Flag for including the Q-matrix
-    model::POMDP # for index() function call in action
     # constructor with an optinal initial value function argument
     function ValueIterationPolicy(mdp::POMDP; 
                                   utility::Vector{Float64}=Array(Float64,0),
@@ -84,22 +83,29 @@ type ValueIterationPolicy <: Policy
     end
 end
 
+# returns a default value iteration policy
+function create_policy(solver::ValueIterationSolver, mdp::POMDP)
+    return ValueIterationPolicy(mdp)
+end
+
 # returns the fields of the policy type
 function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
 end
 
 #####################################################################
-# solve! runs the value iteration algorithm
-# the policy input argument is modified: util, policy and q are changed in the function
-# verbose is a flag that triggers text output to the command line
-# example code for running the function:
+# Solve runs the value iteration algorithm.
+# The policy input argument is either provided by the user or 
+# initialized during the function call.
+# Verbose is a flag that triggers text output to the command line
+# Example code for running the function:
 # mdp = GridWorld(10, 10) # initialize a 10x10 grid world MDP (user written code)
 # solver = ValueIterationSolver(max_iterations=40, belres=1e-3)
 # policy = ValueIterationPolicy(mdp)
-# solve!(policy, solver, mdp, verbose=true) 
+# solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp::POMDP; verbose::Bool=false)
+#function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp::POMDP; verbose::Bool=false)
+function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(solver, mdp); verbose::Bool=false)
 
     # solver parameters
     max_iterations = solver.max_iterations
@@ -129,16 +135,16 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp:
         # state loop
         for (istate, s) in enumerate(domain(sspace))
             old_util = util[istate] # for residual 
-            actions!(aspace, mdp, s)
+            actions(mdp, s, aspace)
             max_util = -Inf
             # action loop
             # util(s) = R(s,a) + discount_factor * sum(T(s'|s,a)util(s')
             for (iaction, a) in enumerate(domain(aspace))
-                #transition!(dist, mdp, s, a) # fills distribution over neighbors
                 transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
                 for j = 1:length(dist)
                     p = weight(dist, j)
+                    p == 0.0 ? continue : nothing # skip if zero prob
                     sidx = index(dist, j)
                     u += p * util[sidx]
                 end
@@ -162,8 +168,8 @@ function solve!(policy::ValueIterationPolicy, solver::ValueIterationSolver, mdp:
     policy
 end
 
-function action(policy::ValueIterationPolicy, s::State)
-    sidx = index(policy.pomdp)
+function action(mdp::POMDP, policy::ValueIterationPolicy, s::State)
+    sidx = index(mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
@@ -172,8 +178,3 @@ function value(policy::ValueIterationPolicy, s::State)
     policy.util[sidx]
 end
 
-function action(policy::ValueIterationPolicy, s::Int64)
-    aidx = policy.policy[s]
-    return policy.action_map[aidx]
-end
-value(policy::ValueIterationPolicy, s::Int64) = policy.util[s]

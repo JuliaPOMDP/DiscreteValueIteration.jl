@@ -4,16 +4,15 @@ module DiscreteValueIteration
 
 using POMDPs
 
-import POMDPs: Solver, solve!, Policy, action, value 
+import POMDPs: Solver, solve, Policy, create_policy, action, value 
 
 export 
     ValueIterationPolicy,
     ValueIterationSolver,
-    solve!,
+    create_policy,
+    solve,
     action,
     value
-
-typealias Action Any
 
 include("vanilla.jl")
 
