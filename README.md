@@ -24,9 +24,19 @@ Pkg.clone("https://github.com/sisl/DiscreteValueIteration.jl")
 
 The following functions must be defined in order to use DiscreteValueIteration:
 
+```julia
+discount(mdp::POMDP) # returns the discount factor
+states(mdp::POMDP) # returns the state space 
+actions(mdp::POMDP) # returns the action space
+transition(mdp::POMDP, s::State, a::Action, d::AbstractDistribution) # fills d with neighboring states reachable from the s,a pair
+reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a
+length(d::AbstractDistribution) # returns the number of elemnts in the discrete distribution d
+index(d::AbstractDistribution, i::Int64) # returns the state index of the ith state in the distribution d
+weight(d::AbstractDistribution, i::Int64) # returns the weight(probability) of the ith state in the distribution d
+create_transition_distribution(mdp::POMDP) # initializes a distirbution over states
+```
 
-
-[comment]: <> (
+<!---
 To use the DiscreteValueIteration module, begin your code by adding the maximum number of processors you would like to
 use, and export the module
 
@@ -101,7 +111,7 @@ u  = value(policy, s) # expected optimal value for state s
 q  = value(policy, s, a) # expected value for state-action pair
 ap = action(policy, s) # action that maximizes the expected utility
 ```
-)
+-->
 
 ## Tutorial
 
