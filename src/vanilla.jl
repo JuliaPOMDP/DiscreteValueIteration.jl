@@ -1,12 +1,3 @@
-#####################################################################
-# This file implements the value iteration algorithm for solving MDPs
-# 
-# The following functions are required to use this solver:
-# 
-#
-#
-#####################################################################
-
 # The solver type 
 type ValueIterationSolver <: Solver
     max_iterations::Int64 # max number of iterations 
