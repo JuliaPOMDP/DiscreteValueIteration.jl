@@ -48,6 +48,13 @@ policy = ValueIterationPolicy(mdp) # initializes the policy type
 solve(solver, mdp, policy, verbose=true) # runs value iterations
 ```
 
+To extract the policy for a ginve state, simply call the action function:
+
+```julia
+s = create_state(mdp) # this can be any valid state
+a = action(mdp, polciy, s) # returns the optimal action for state s
+```
+
 <!---
 To use the DiscreteValueIteration module, begin your code by adding the maximum number of processors you would like to
 use, and export the module
