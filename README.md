@@ -48,7 +48,7 @@ policy = ValueIterationPolicy(mdp) # initializes the policy type
 solve(solver, mdp, policy, verbose=true) # runs value iterations
 ```
 
-To extract the policy for a ginve state, simply call the action function:
+To extract the policy for a given state, simply call the action function:
 
 ```julia
 s = create_state(mdp) # this can be any valid state
