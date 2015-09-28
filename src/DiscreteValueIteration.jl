@@ -26,7 +26,8 @@ export
     create_policy,
     solve,
     action,
-    value
+    value,
+    locals
 
 include("vanilla.jl")
 

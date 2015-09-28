@@ -55,8 +55,8 @@ type ValueIterationPolicy <: Policy
         p = zeros(ns)
         u = zeros(ns)
         for i = 1:ns
-            p[i] = indmax(q[ns,:])
-            u[i] = maximum(q[ns,:])
+            p[i] = indmax(q[i,:])
+            u[i] = maximum(q[i,:])
         end
         am = Action[]
         space = actions(mdp)
@@ -164,7 +164,7 @@ function action(mdp::POMDP, policy::ValueIterationPolicy, s::State)
     return policy.action_map[aidx]
 end
 function value(mdp::POMDP, policy::ValueIterationPolicy, s::State)
-    sidx = index(policy.pomdp)
+    sidx = index(mdp, s)
     policy.util[sidx]
 end
 
