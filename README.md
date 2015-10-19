@@ -22,7 +22,7 @@ Pkg.clone("https://github.com/sisl/DiscreteValueIteration.jl")
 
 ## Usage
 
-The following functions must be defined in order to use DiscreteValueIteration:
+For an extensive tutorial, see the [this](http://nbviewer.ipython.org/github/sisl/POMDPs.jl/blob/master/examples/GridWorld.ipynb) notebook. The following functions must be defined in order to use DiscreteValueIteration:
 
 ```julia
 discount(mdp::POMDP) # returns the discount factor
