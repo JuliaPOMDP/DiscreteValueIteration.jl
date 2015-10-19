@@ -128,14 +128,14 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
             actions(mdp, s, aspace)
             max_util = -Inf
             # action loop
-            # util(s) = R(s,a) + discount_factor * sum(T(s'|s,a)util(s')
+            # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
             for (iaction, a) in enumerate(domain(aspace))
                 transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
-                for j = 1:length(dist)
-                    p = weight(dist, j)
+                for sp in domain(dist)
+                    p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
-                    sidx = index(dist, j)
+                    sidx = index(mdp, sp)
                     u += p * util[sidx]
                 end
                 new_util = reward(mdp, s, a) + discount_factor * u
