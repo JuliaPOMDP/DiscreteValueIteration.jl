@@ -32,9 +32,7 @@ states(mdp::POMDP) # returns the state space
 actions(mdp::POMDP) # returns the action space
 transition(mdp::POMDP, s::State, a::Action, d::AbstractDistribution) # fills d with neighboring states reachable from the s,a pair
 reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a
-length(d::AbstractDistribution) # returns the number of elemnts in the discrete distribution d
-index(d::AbstractDistribution, i::Int64) # returns the state index of the ith state in the distribution d
-weight(d::AbstractDistribution, i::Int64) # returns the weight(probability) of the ith state in the distribution d
+pdf(d::AbstractDistribution, s::State) #  value of probability distribution function at state s
 create_transition_distribution(mdp::POMDP) # initializes a distirbution over states
 ```
 
