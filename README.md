@@ -1,11 +1,13 @@
+<!---
 [![Build Status](https://travis-ci.org/sisl/DiscreteValueIteration.jl.svg?branch=master)](https://travis-ci.org/sisl/DiscreteValueIteration.jl)
 [![Coverage Status](https://coveralls.io/repos/sisl/DiscreteValueIteration.jl/badge.svg)](https://coveralls.io/r/sisl/DiscreteValueIteration.jl)
+-->
 
 # DiscreteValueIteration
 
 This package implements the discrete value iteration algorithm in Julia for solving Markov decision processes (MDPs).
 The user should define the problem according to the API in [POMDPs.jl](https://github.com/sisl/POMDPs.jl). Examples of
-problem definitions can be found in [POMDPModels.jl](https://github.com/sisl/POMDPModels.jl).
+problem definitions can be found in [POMDPModels.jl](https://github.com/sisl/POMDPModels.jl). For an extensive tutorial, see the [this](http://nbviewer.ipython.org/github/sisl/POMDPs.jl/blob/master/examples/GridWorld.ipynb) notebook.
 <!---
 A multi-core parallel solver is availiable as well. At the moment, Gauss-Siedel and
 vanilla value iteration solvers are provided.
@@ -22,7 +24,7 @@ Pkg.clone("https://github.com/sisl/DiscreteValueIteration.jl")
 
 ## Usage
 
-For an extensive tutorial, see the [this](http://nbviewer.ipython.org/github/sisl/POMDPs.jl/blob/master/examples/GridWorld.ipynb) notebook. The following functions must be defined in order to use DiscreteValueIteration:
+The following functions must be defined in order to use DiscreteValueIteration:
 
 ```julia
 discount(mdp::POMDP) # returns the discount factor
