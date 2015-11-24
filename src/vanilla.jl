@@ -15,6 +15,7 @@ type ValueIterationPolicy <: Policy
     policy::Vector{Int64} # Policy array, maps state index to action index
     action_map::Vector{Action} # Maps the action index to the concrete action type
     include_Q::Bool # Flag for including the Q-matrix
+    mdp::POMDP # uses the model for indexing in the action function
     # constructor with an optinal initial value function argument
     function ValueIterationPolicy(mdp::POMDP; 
                                   utility::Vector{Float64}=Array(Float64,0),
@@ -37,6 +38,7 @@ type ValueIterationPolicy <: Policy
         self.policy = zeros(Int64,ns)
         include_Q ? self.qmat = zeros(ns,na) : self.qmat = zeros(0,0)
         self.include_Q = include_Q
+        self.mdp = mdp
         return self
     end
     # constructor for solved q, util and policy
@@ -47,6 +49,7 @@ type ValueIterationPolicy <: Policy
         self.policy = policy
         self.action_map = am
         self.include_Q = true
+        self.mdp = mdp
         return self
     end
     # constructor for defualt Q-matrix
@@ -70,6 +73,7 @@ type ValueIterationPolicy <: Policy
         self.action_map = am
         self.include_Q = true
         self.action_map = am
+        self.mdp = mdp
         return self
     end
 end
@@ -158,13 +162,13 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
     policy
 end
 
-function action(mdp::POMDP, policy::ValueIterationPolicy, s::State)
-    sidx = index(mdp, s)
+function action(policy::ValueIterationPolicy, s::State)
+    sidx = index(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
-function value(mdp::POMDP, policy::ValueIterationPolicy, s::State)
-    sidx = index(mdp, s)
+function value(policy::ValueIterationPolicy, s::State)
+    sidx = index(policy.mdp, s)
     policy.util[sidx]
 end
 
