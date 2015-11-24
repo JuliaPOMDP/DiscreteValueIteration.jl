@@ -42,11 +42,16 @@ type ValueIterationPolicy <: Policy
         return self
     end
     # constructor for solved q, util and policy
-    function ValueIterationPolicy(q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64}, am::Vector{Action})
+    function ValueIterationPolicy(mdp::POMDP, q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64})
         self = new()
         self.qmat = q
         self.util = util
         self.policy = policy
+        am = Action[]
+        space = actions(mdp)
+        for a in domain(space)
+            push!(am, a)
+        end
         self.action_map = am
         self.include_Q = true
         self.mdp = mdp
