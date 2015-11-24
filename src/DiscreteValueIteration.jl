@@ -13,14 +13,16 @@
 # domain(space::AbstractSpace) # state and action spaces
 # create_transition_distribution(mdp::POMDP)
 #####################################################################
-
+"""
+This module implements a value iteration solver that uses the interface defined in POMDPs.jl
+"""
 module DiscreteValueIteration
 
 using POMDPs
 
 import POMDPs: Solver, solve, Policy, create_policy, action, value 
 
-export 
+export
     ValueIterationPolicy,
     ValueIterationSolver,
     create_policy,
@@ -30,5 +32,6 @@ export
     locals
 
 include("vanilla.jl")
+include("docs.jl")
 
 end # module
