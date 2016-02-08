@@ -31,7 +31,7 @@ type ValueIterationPolicy <: Policy
         end
         am = Action[]
         space = actions(mdp)
-        for a in domain(space)
+        for a in iterator(space)
             push!(am, a)
         end
         self.action_map = am
@@ -49,7 +49,7 @@ type ValueIterationPolicy <: Policy
         self.policy = policy
         am = Action[]
         space = actions(mdp)
-        for a in domain(space)
+        for a in iterator(space)
             push!(am, a)
         end
         self.action_map = am
@@ -68,7 +68,7 @@ type ValueIterationPolicy <: Policy
         end
         am = Action[]
         space = actions(mdp)
-        for a in domain(space)
+        for a in iterator(space)
             push!(am, a)
         end
         self = new()
@@ -132,22 +132,23 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
         residual = 0.0
         tic()
         # state loop
-        for (istate, s) in enumerate(domain(sspace))
+        for (istate, s) in enumerate(iterator(sspace))
             old_util = util[istate] # for residual 
             actions(mdp, s, aspace)
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            for (iaction, a) in enumerate(domain(aspace))
+            for (iaction, a) in enumerate(iterator(aspace))
                 transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
-                for sp in domain(dist)
+                for sp in iterator(dist)
                     p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
+                    r = reward(mdp, s, a, sp)
                     sidx = index(mdp, sp)
-                    u += p * util[sidx]
+                    u += p * (r + discount_factor * util[sidx]) 
                 end
-                new_util = reward(mdp, s, a) + discount_factor * u
+                new_util = u 
                 if new_util > max_util
                     max_util = new_util
                     pol[istate] = iaction
