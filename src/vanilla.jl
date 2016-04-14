@@ -13,11 +13,11 @@ type ValueIterationPolicy <: Policy
     qmat::Matrix{Float64} # Q matrix stroign Q(s,a) values
     util::Vector{Float64} # The value function V(s)
     policy::Vector{Int64} # Policy array, maps state index to action index
-    action_map::Vector{Action} # Maps the action index to the concrete action type
+    action_map::Vector{Any} # Maps the action index to the concrete action type
     include_Q::Bool # Flag for including the Q-matrix
-    mdp::POMDP # uses the model for indexing in the action function
+    mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
     # constructor with an optinal initial value function argument
-    function ValueIterationPolicy(mdp::POMDP; 
+    function ValueIterationPolicy(mdp::Union{MDP,POMDP}; 
                                   utility::Vector{Float64}=Array(Float64,0),
                                   include_Q::Bool=true)
         ns = n_states(mdp)
@@ -29,7 +29,7 @@ type ValueIterationPolicy <: Policy
         else
             self.util = zeros(ns)
         end
-        am = Action[]
+        am = Any[]
         space = actions(mdp)
         for a in iterator(space)
             push!(am, a)
@@ -42,12 +42,12 @@ type ValueIterationPolicy <: Policy
         return self
     end
     # constructor for solved q, util and policy
-    function ValueIterationPolicy(mdp::POMDP, q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64})
+    function ValueIterationPolicy(mdp::Union{MDP,POMDP}, q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64})
         self = new()
         self.qmat = q
         self.util = util
         self.policy = policy
-        am = Action[]
+        am = Any[]
         space = actions(mdp)
         for a in iterator(space)
             push!(am, a)
@@ -58,7 +58,7 @@ type ValueIterationPolicy <: Policy
         return self
     end
     # constructor for defualt Q-matrix
-    function ValueIterationPolicy(mdp::POMDP, q::Matrix{Float64})
+    function ValueIterationPolicy(mdp::Union{MDP,POMDP}, q::Matrix{Float64})
         (ns, na) = size(q)
         p = zeros(ns)
         u = zeros(ns)
@@ -66,7 +66,7 @@ type ValueIterationPolicy <: Policy
             p[i] = indmax(q[i,:])
             u[i] = maximum(q[i,:])
         end
-        am = Action[]
+        am = Any[]
         space = actions(mdp)
         for a in iterator(space)
             push!(am, a)
@@ -84,7 +84,7 @@ type ValueIterationPolicy <: Policy
 end
 
 # returns a default value iteration policy
-function create_policy(solver::ValueIterationSolver, mdp::POMDP)
+function create_policy(solver::ValueIterationSolver, mdp::Union{MDP,POMDP})
     return ValueIterationPolicy(mdp)
 end
 
@@ -104,7 +104,7 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(solver, mdp); verbose::Bool=false)
+function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
     # solver parameters
     max_iterations = solver.max_iterations
@@ -145,7 +145,7 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
                     p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
                     r = reward(mdp, s, a, sp)
-                    sidx = index(mdp, sp)
+                    sidx = state_index(mdp, sp)
                     u += p * (r + discount_factor * util[sidx]) 
                 end
                 new_util = u 
@@ -168,13 +168,13 @@ function solve(solver::ValueIterationSolver, mdp::POMDP, policy=create_policy(so
     policy
 end
 
-function action(policy::ValueIterationPolicy, s::State)
-    sidx = index(policy.mdp, s)
+function action{S}(policy::ValueIterationPolicy, s::S)
+    sidx = state_index(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
-function value(policy::ValueIterationPolicy, s::State)
-    sidx = index(policy.mdp, s)
+function value{S}(policy::ValueIterationPolicy, s::S)
+    sidx = state_index(policy.mdp, s)
     policy.util[sidx]
 end
 
