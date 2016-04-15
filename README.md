@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/JuliaPOMDP/DiscreteValueIteration.jl.svg?branch=master)](https://travis-ci.org/JuliaPOMDP/DiscreteValueIteration.jl)
-[![Coverage Status](https://coveralls.io/repos/JuliaPOMDP/DiscreteValueIteration.jl/badge.svg)](https://coveralls.io/r/JuliaPOMDP/DiscreteValueIteration.jl)
+[![Coverage Status](https://coveralls.io/repos/github/JuliaPOMDP/DiscreteValueIteration.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaPOMDP/DiscreteValueIteration.jl?branch=master)
 
 
 # DiscreteValueIteration
