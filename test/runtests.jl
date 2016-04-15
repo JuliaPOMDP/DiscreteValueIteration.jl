@@ -8,16 +8,16 @@ function serial_qtest(mdp::POMDP, file::AbstractString; niter::Int64=100, res::F
     qt = readdlm(file)
     solver = ValueIterationSolver(max_iterations=niter, belres=res)
     policy = create_policy(solver, mdp) 
-    solve(solver, mdp, policy, verbose=true)
+    policy = solve(solver, mdp, policy, verbose=true)
     (q, u, p, am) = locals(policy)
     npolicy = ValueIterationPolicy(mdp, deepcopy(q))
     nnpolicy = ValueIterationPolicy(mdp, deepcopy(q), deepcopy(u), deepcopy(p))
-    s = create_state(mdp)
+    s = GridWorldState(1,1)
     a1 = action(policy, s)
     v1 = value(policy, s)
     a2 = action(npolicy, s)
     v2 = value(npolicy, s)
-    @test_approx_eq_eps qt q 1.0
+    @test_approx_eq_eps qt q 1e-5
     @test policy.policy == nnpolicy.policy
     return true
 end
