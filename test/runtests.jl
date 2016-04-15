@@ -4,7 +4,7 @@ using POMDPs
 using Base.Test
 
 
-function serial_qtest(mdp::POMDP, file::AbstractString; niter::Int64=100, res::Float64=1e-3)
+function serial_qtest(mdp::Union{MDP,POMDP}, file::AbstractString; niter::Int64=100, res::Float64=1e-3)
     qt = readdlm(file)
     solver = ValueIterationSolver(max_iterations=niter, belres=res)
     policy = create_policy(solver, mdp) 
