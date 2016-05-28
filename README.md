@@ -17,7 +17,8 @@ vanilla value iteration solvers are provided.
 Start Julia and run the following command:
 
 ```julia
-Pkg.clone("https://github.com/JuliaPOMDP/DiscreteValueIteration.jl")
+using POMDPs
+POMDPs.add("DiscreteValueIteration")
 ```
 
 
@@ -38,7 +39,6 @@ create_transition_distribution(mdp::POMDP) # initializes a distirbution over sta
 Once the above functions are defined, the solver can be called with the following syntax:
 
 ```julia
-using MyMDP # module containing your MDP type and the associated functions
 using DiscreteValueIteration
 
 mdp = MyMDP() # initializes the MDP
