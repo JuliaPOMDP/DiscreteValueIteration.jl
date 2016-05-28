@@ -134,7 +134,6 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
         # state loop
         for (istate, s) in enumerate(iterator(sspace))
             old_util = util[istate] # for residual 
-            actions(mdp, s, aspace)
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
