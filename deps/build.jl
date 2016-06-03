@@ -1,3 +1,3 @@
 using POMDPs
 
-POMDPs.add("POMDPModels")
+POMDPs.add("POMDPModels", false)
