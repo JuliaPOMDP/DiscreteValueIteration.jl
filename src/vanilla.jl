@@ -132,30 +132,33 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
         residual = 0.0
         tic()
         # state loop
-        for (istate, s) in enumerate(iterator(sspace))
-            old_util = util[istate] # for residual 
+        for s in iterator(sspace)
+            sidx = state_index(mdp, s)
+            old_util = util[sidx] # for residual 
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            for (iaction, a) in enumerate(iterator(aspace))
+            sub_aspace = POMDPs.actions(mdp, s, aspace)
+            for a in iterator(aspace)
+                aidx = action_index(mdp, a)
                 transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
                     r = reward(mdp, s, a, sp)
-                    sidx = state_index(mdp, sp)
-                    u += p * (r + discount_factor * util[sidx]) 
+                    spidx = state_index(mdp, sp)
+                    u += p * (r + discount_factor * util[spidx]) 
                 end
                 new_util = u 
                 if new_util > max_util
                     max_util = new_util
-                    pol[istate] = iaction
+                    pol[sidx] = aidx
                 end
-                include_Q ? (qmat[istate, iaction] = new_util) : nothing
+                include_Q ? (qmat[sidx, aidx] = new_util) : nothing
             end # action
             # update the value array
-            util[istate] = max_util 
+            util[sidx] = max_util 
             diff = abs(max_util - old_util)
             diff > residual ? (residual = diff) : nothing
         end # state
