@@ -138,7 +138,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
             for (iaction, a) in enumerate(iterator(aspace))
-                transition(mdp, s, a, dist) # fills distribution over neighbors
+                dist = transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
