@@ -10,13 +10,13 @@ end
 
 # The policy type
 type ValueIterationPolicy <: Policy
-    qmat::Matrix{Float64} # Q matrix stroign Q(s,a) values
+    qmat::Matrix{Float64} # Q matrix storing Q(s,a) values
     util::Vector{Float64} # The value function V(s)
     policy::Vector{Int64} # Policy array, maps state index to action index
     action_map::Vector{Any} # Maps the action index to the concrete action type
     include_Q::Bool # Flag for including the Q-matrix
     mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
-    # constructor with an optinal initial value function argument
+    # constructor with an optimal initial value function argument
     function ValueIterationPolicy(mdp::Union{MDP,POMDP}; 
                                   utility::Vector{Float64}=Array(Float64,0),
                                   include_Q::Bool=true)
@@ -32,7 +32,8 @@ type ValueIterationPolicy <: Policy
         am = Any[]
         space = actions(mdp)
         for a in iterator(space)
-            push!(am, a)
+			aidx = action_index(mdp, a)
+            push!(am, aidx)
         end
         self.action_map = am
         self.policy = zeros(Int64,ns)
@@ -50,14 +51,15 @@ type ValueIterationPolicy <: Policy
         am = Any[]
         space = actions(mdp)
         for a in iterator(space)
-            push!(am, a)
+			aidx = action_index(mdp, a)
+            push!(am, aidx)
         end
         self.action_map = am
         self.include_Q = true
         self.mdp = mdp
         return self
     end
-    # constructor for defualt Q-matrix
+    # constructor for default Q-matrix
     function ValueIterationPolicy(mdp::Union{MDP,POMDP}, q::Matrix{Float64})
         (ns, na) = size(q)
         p = zeros(ns)
@@ -69,7 +71,8 @@ type ValueIterationPolicy <: Policy
         am = Any[]
         space = actions(mdp)
         for a in iterator(space)
-            push!(am, a)
+			aidx = action_index(mdp, a)
+            push!(am, aidx)
         end
         self = new()
         self.qmat = q
@@ -77,7 +80,6 @@ type ValueIterationPolicy <: Policy
         self.policy = p
         self.action_map = am
         self.include_Q = true
-        self.action_map = am
         self.mdp = mdp
         return self
     end
@@ -117,7 +119,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     include_Q = policy.include_Q
     pol = policy.policy 
 
-    # pre-allocate the transtion distirbution and the interpolants
+    # pre-allocate the transition distirbution and the interpolants
     dist = create_transition_distribution(mdp)
 
     # initalize space
