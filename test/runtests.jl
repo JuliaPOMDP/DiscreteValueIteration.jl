@@ -41,19 +41,19 @@ function test_creation_of_policy_given_utilities()
 	# |_________|_________|_________| plus a fake state for absorbing
 	mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
 	#println(mdp)
-	println(n_states(mdp))
+	#println(n_states(mdp))
 	
 	for s in iterator(states(mdp))
 		sidx = state_index(mdp, s)
-		println(s)
-		println(sidx)
+		#println(s)
+		#println(sidx)
 	end
 	#println(n_actions(mdp))
 	utility = [5.45632,8.20505,10.0,0.0] #0.0 is associated with the fake absorbing state
-	println(size(utility))
+	#println(size(utility))
 	policy = ValueIterationPolicy(mdp, utility=utility, include_Q=true)
-	println(policy)
-	println(policy.util)
+	#println(policy)
+	#println(policy.util)
 	return policy.util == utility
 	#p.qmat,p.util,p.policy,p.action_map = locals(policy)
 
