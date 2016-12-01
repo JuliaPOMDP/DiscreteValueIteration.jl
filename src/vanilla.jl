@@ -31,7 +31,7 @@ type ValueIterationPolicy <: Policy
         end
         am = Any[]
         for a in iterator(actions(mdp))
-			aidx = action_index(mdp, a)
+            aidx = action_index(mdp, a)
             push!(am, aidx)
         end
         self.action_map = am
@@ -49,7 +49,7 @@ type ValueIterationPolicy <: Policy
         self.policy = policy
         am = Any[]
         for a in iterator(actions(mdp))
-			aidx = action_index(mdp, a)
+            aidx = action_index(mdp, a)
             push!(am, aidx)
         end
         self.action_map = am
@@ -68,7 +68,7 @@ type ValueIterationPolicy <: Policy
         end
         am = Any[]
         for a in iterator(actions(mdp))
-			aidx = action_index(mdp, a)
+            aidx = action_index(mdp, a)
             push!(am, aidx)
         end
         self = new()
@@ -116,7 +116,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     include_Q = policy.include_Q
     pol = policy.policy 
 
-    # pre-allocate the transition distirbution and the interpolants
+    # pre-allocate the transition distribution and the interpolants
     dist = create_transition_distribution(mdp)
 
     # initalize space
@@ -140,7 +140,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
             sub_aspace = POMDPs.actions(mdp, s, aspace)
             for a in iterator(aspace)
                 aidx = action_index(mdp, a)
-                transition(mdp, s, a, dist) # fills distribution over neighbors
+                dist = transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
@@ -169,7 +169,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     policy
 end
 
-function action{S}(policy::ValueIterationPolicy, s::S)
+function action{S,A}(policy::ValueIterationPolicy, s::S, a::A=nothing)
     sidx = state_index(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
