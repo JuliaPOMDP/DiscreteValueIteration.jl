@@ -24,14 +24,13 @@ type ValueIterationPolicy <: Policy
         na = n_actions(mdp)
         self = new()
         if !isempty(utility)
-            @assert size(utilty) == ns "Input utility dimension mismatch"
+            @assert size(utility)[1] == ns "Input utility dimension mismatch"
             self.util = utility
         else
             self.util = zeros(ns)
         end
         am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
+        for a in iterator(actions(mdp))
 			aidx = action_index(mdp, a)
             push!(am, aidx)
         end
@@ -49,8 +48,7 @@ type ValueIterationPolicy <: Policy
         self.util = util
         self.policy = policy
         am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
+        for a in iterator(actions(mdp))
 			aidx = action_index(mdp, a)
             push!(am, aidx)
         end
@@ -69,8 +67,7 @@ type ValueIterationPolicy <: Policy
             u[i] = maximum(q[i,:])
         end
         am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
+        for a in iterator(actions(mdp))
 			aidx = action_index(mdp, a)
             push!(am, aidx)
         end
