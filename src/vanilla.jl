@@ -105,40 +105,25 @@ end
 #####################################################################
 function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
-    # solver parameters
-    max_iterations = solver.max_iterations
-    belres = solver.belres
-    discount_factor = discount(mdp)
-
-    # intialize the utility and Q-matrix
-    util = policy.util
-    qmat = policy.qmat
-    include_Q = policy.include_Q
-    pol = policy.policy 
-
     # pre-allocate the transition distribution and the interpolants
     dist = create_transition_distribution(mdp)
-
-    # initalize space
-    sspace = states(mdp)
-    aspace = actions(mdp)
 
     total_time = 0.0
     iter_time = 0.0
 
     # main loop
-    for i = 1:max_iterations
+    for i = 1:solver.max_iterations
         residual = 0.0
         tic()
         # state loop
-        for s in iterator(sspace)
+        for s in iterator(states(mdp))
             sidx = state_index(mdp, s)
-            old_util = util[sidx] # for residual 
+            old_util = policy.util[sidx] # for residual 
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            sub_aspace = POMDPs.actions(mdp, s, aspace)
-            for a in iterator(aspace)
+            sub_aspace = POMDPs.actions(mdp, s, actions(mdp))
+            for a in iterator(actions(mdp))
                 aidx = action_index(mdp, a)
                 dist = transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0
@@ -147,24 +132,24 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                     p == 0.0 ? continue : nothing # skip if zero prob
                     r = reward(mdp, s, a, sp)
                     spidx = state_index(mdp, sp)
-                    u += p * (r + discount_factor * util[spidx]) 
+                    u += p * (r + discount(mdp) * policy.util[spidx]) 
                 end
                 new_util = u 
                 if new_util > max_util
                     max_util = new_util
-                    pol[sidx] = aidx
+                    policy.policy[sidx] = aidx
                 end
-                include_Q ? (qmat[sidx, aidx] = new_util) : nothing
+                policy.include_Q ? (policy.qmat[sidx, aidx] = new_util) : nothing
             end # action
             # update the value array
-            util[sidx] = max_util 
+            policy.util[sidx] = max_util 
             diff = abs(max_util - old_util)
             diff > residual ? (residual = diff) : nothing
         end # state
         iter_time = toq()
         total_time += iter_time
         verbose ? println("Iteration : $i, residual: $residual, iteration run-time: $iter_time, total run-time: $total_time") : nothing
-        residual < belres ? break : nothing
+        residual < solver.belres ? break : nothing
     end # main
     policy
 end
