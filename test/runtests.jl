@@ -36,6 +36,9 @@ function test_complex_gridworld()
 end
 
 function test_creation_of_policy_given_utilities()
+	# If we create a ValueIterationPolicy by providing a utility,
+	# does that utility successfully get saved?
+	#
 	# GridWorld:
 	# |_________|_________|_________| plus a fake state for absorbing
 	mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
@@ -44,14 +47,25 @@ function test_creation_of_policy_given_utilities()
 	correct_utility = [5.45632, 8.20505, 10.0, 0.0] 
 
 	# Derive a policy & check that they match	
-	policy = ValueIterationPolicy(mdp, utility=utility, include_Q=true)
-	println( policy)
+	policy = ValueIterationPolicy(mdp, utility=correct_utility, include_Q=true)
 	
-	return policy.util == utility
+	
+    solver = ValueIterationSolver(max_iterations=niter, belres=res)
+    policy = solve(solver, mdp, policy, verbose=true)
+	
+	println( policy.util)
+	println( policy.qmat)
+	println( policy.policy)
+	println( policy.include_Q)
+	
+	return policy.util == correct_utility
 end
 
 
 function test_creation_of_policy_given_q_util_policy()
+	# If we create a ValueIterationPolicy by providing a utility, q, and policy,
+	# does those values successfully get saved?
+	#
 	# GridWorld:
 	# |_________|_________|_________| plus a fake state for absorbing
 	mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
@@ -61,9 +75,10 @@ function test_creation_of_policy_given_q_util_policy()
 
 	# Derive a policy & check that they match	
 	policy = ValueIterationPolicy(mdp, utility=utility, include_Q=true)
-	return policy.util == utility
+	return policy.util == correct_utility
 end
 
+#=
     function ValueIterationPolicy(mdp::Union{MDP,POMDP}, q::Matrix{Float64}, util::Vector{Float64}, policy::Vector{Int64})
         self = new()
         self.qmat = q
@@ -79,11 +94,11 @@ end
         self.mdp = mdp
         return self
     end
-	
+=#	
 
 @test test_complex_gridworld() == true
 @test test_creation_of_policy_given_utilities() == true
-@test test_creation_of_policy_given_q_util_policy() == true
+#@test test_creation_of_policy_given_q_util_policy() == true
 
 println("Finished tests")
 
