@@ -134,12 +134,11 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                     spidx = state_index(mdp, sp)
                     u += p * (r + discount(mdp) * policy.util[spidx]) 
                 end
-                new_util = u 
-                if new_util > max_util
-                    max_util = new_util
+                if u > max_util
+                    max_util = u
                     policy.policy[sidx] = aidx
                 end
-                policy.include_Q ? (policy.qmat[sidx, aidx] = new_util) : nothing
+                policy.include_Q ? (policy.qmat[sidx, aidx] = u) : nothing
             end # action
             # update the value array
             policy.util[sidx] = max_util 
