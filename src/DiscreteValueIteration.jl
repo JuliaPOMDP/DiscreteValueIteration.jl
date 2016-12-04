@@ -33,6 +33,7 @@ export
     value,
     locals
 
+include("policy.jl")
 include("vanilla.jl")
 include("docs.jl")
 
