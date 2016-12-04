@@ -12,7 +12,9 @@ using Base.Test
 #    for those tests to include all 4 possible actions.  If it runs
 #    second, then the POMDPs.actions is not successfully overwritten
 #    for the limited-actions case, and the verification of new functionality 
-#    test fails.
+#    test fails.  This occurs regardless of whether I include 
+#    `import POMDPs.actions` at the top of the runtests.jl file as per
+#    http://stackoverflow.com/questions/28188800/can-i-write-i-julia-method-that-works-whenever-possible-like-a-c-template-fu/28204432
 # -- Can't include it as a separate test file.  Julia wants a single test
 #    file named runtests.jl, rather than running all test files in the
 #    tests directory.  Including a separate file like this one with an
