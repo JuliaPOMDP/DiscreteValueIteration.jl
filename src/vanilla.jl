@@ -122,8 +122,9 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            sub_aspace = POMDPs.actions(mdp, s, actions(mdp))
-            for a in iterator(actions(mdp))
+			# Checks only the subset of actions available  
+			# from each state (conditions actions on state)
+            for a in iterator(actions(mdp, s, actions(mdp)))
                 aidx = action_index(mdp, a)
                 dist = transition(mdp, s, a, dist) # fills distribution over neighbors
                 u = 0.0

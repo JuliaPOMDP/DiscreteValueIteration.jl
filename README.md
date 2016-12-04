@@ -28,7 +28,7 @@ The following functions must be defined in order to use DiscreteValueIteration:
 ```julia
 discount(mdp::POMDP) # returns the discount factor
 states(mdp::POMDP) # returns the state space 
-actions(mdp::POMDP) # returns the action space
+actions(mdp::POMDP, s::State, aspace::AbstractSpace{Action}) # returns the action space from the state s
 transition(mdp::POMDP, s::State, a::Action, d::AbstractDistribution) # fills d with neighboring states reachable from the s,a pair
 reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a
 pdf(d::AbstractDistribution, s::State) #  value of probability distribution function at state s
@@ -64,7 +64,7 @@ using ParallelValueIteration
 
 Note: if you plan on using only the serial solver, you can ignore the addprocs command
 
-To use the solver with your MDP, follow the API defined in DiscreteMDPs.jl. Define the following functions in your MDP module (see GridWolrd_.jl for a detailed example):
+To use the solver with your MDP, follow the API defined in DiscreteMDPs.jl. Define the following functions in your MDP module (see GridWorld_.jl for a detailed example):
 
 ```julia
 states(mdp::YourMDP) # returns an iterator over MDP states
