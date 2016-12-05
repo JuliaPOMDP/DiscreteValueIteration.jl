@@ -1,6 +1,6 @@
-# The rectangular weighted discrete value iteration solver 
+# The multilinear (rectangular) weighted discrete value iteration solver 
 # solves for states according to a local weighting function
-# that uses rectangular interpolation.
+# that uses multilinear interpolation.
 
 # The TinyMDP type, which builds a much smaller MDP from a larger MDP
 # at intervals specified by the user
@@ -109,7 +109,6 @@ function action{S,A}(policy::LocallyWeightedValueIterationPolicy, s::S, a::A=not
 		end
 		action_quality[act] -= weights[i]
 	end
-	println(action_quality)
 	best_action, total_weight = Base.Collections.peek(action_quality)
     return policy.subspace_policy.action_map[best_action]
 end
