@@ -6,8 +6,7 @@
 # n_actions(mdp::POMDP)
 # discount(mdp::POMDP)
 # states(mdp::POMDP)
-# actions(mdp::POMDP)
-# actions(mdp::POMDP, s, aspace)
+# actions(mdp::POMDP, s::State, actionSpace::AbstractSpace)
 # transition(mdp::POMDP, s::State, a::Action)
 # reward(mdp::POMDP, s::State, a::Action)
 # state_index(mdp, s)
@@ -21,6 +20,8 @@ This module implements a value iteration solver that uses the interface defined 
 module DiscreteValueIteration
 
 using POMDPs
+using POMDPModels
+using GridInterpolations
 
 import POMDPs: Solver, solve, Policy, create_policy, action, value 
 
@@ -35,6 +36,12 @@ export
 
 include("policy.jl")
 include("vanilla.jl")
+
+include("rectangular.jl")
+export
+	RectangularValueIterationSolver,
+	TinyMDP # primarily exported for testing; is there a better way?
+
 include("docs.jl")
 
 end # module

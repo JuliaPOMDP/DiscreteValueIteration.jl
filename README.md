@@ -28,6 +28,8 @@ The following functions must be defined in order to use DiscreteValueIteration:
 ```julia
 discount(mdp::POMDP) # returns the discount factor
 states(mdp::POMDP) # returns the state space 
+n_states(mdp::POMDP)
+n_actions(mdp::POMDP)
 actions(mdp::POMDP, s::State, aspace::AbstractSpace{Action}) # returns the action space from the state s
 transition(mdp::POMDP, s::State, a::Action, d::AbstractDistribution) # fills d with neighboring states reachable from the s,a pair
 reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a

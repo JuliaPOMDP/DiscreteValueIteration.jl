@@ -77,3 +77,18 @@ end
 function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
 end
+
+
+
+
+type LocallyWeightedValueIterationPolicy <: Policy
+	subspace_policy::ValueIterationPolicy
+	grid::RectangleGrid
+	
+    function LocallyWeightedValueIterationPolicy(mdp::Union{MDP,POMDP}, grid::RectangleGrid)
+        self = new()
+		self.subspace_policy = ValueIterationPolicy(mdp)
+		self.grid = grid
+        return self
+    end
+end
