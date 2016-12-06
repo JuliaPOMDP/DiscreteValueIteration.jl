@@ -1,7 +1,7 @@
 
 
 # A series of tests checking that the conversion between the original coordinate
-# system and the limited coordinate system is correct appears inside rectangular.jl
+# system and the limited coordinate system is correct appears inside multilinear_interpolation.jl
 # This test relies on TinyGridWorldMDP
 
 @assert big_to_small(GridWorldState(1,1), RectangleGrid([2,5], [2,5])) == GridWorldState(1,1)

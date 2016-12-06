@@ -6,10 +6,8 @@ function test_locally_weighted()
 	# The reward states are in the bottom right hand side
 
 	bmdp = GridWorld(sx=6, sy=6, rs=[GridWorldState(6,2)], rv = [10.0])
-
 	
-	tiny = TinyGridWorldMDP(bmdp, [2,5], [2,5])
-	solver = MultilinearInterpolationValueIterationSolver(tiny)
+	solver = MultilinearInterpolationValueIterationSolver( TinyGridWorldMDP(bmdp, [2,5], [2,5]) )
 	policy = create_policy(solver, bmdp) 
 	pp = solve(solver, bmdp, policy, verbose=true)
 
