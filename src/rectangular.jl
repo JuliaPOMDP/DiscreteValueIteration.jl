@@ -1,11 +1,45 @@
 # The multilinear (rectangular) weighted discrete value iteration solver 
 # solves for states according to a local weighting function
 # that uses multilinear interpolation.
+# The user needs to do the following:
+# - Write the big_mdp object. This might be a continuous MDP or a high-
+#   dimensional MDP. If we continue & use the RectangularValueIterationSolver, 
+#   we will *not* actually solve this MDP -- we'll solve a smaller, discrete one,
+#   and provide the ability to query the solved MDP for locally approximately
+#   optimal values and actions.
+# - Create a grid of type RectangleGrid that discretizes the space
+#   as the user desires with whatever level of granularity the user desires.
+#   The grid defines the basis functions. It can have as many dimensions
+#   with whatever labels the user prefers, but it recommended to have each 
+#   dimension reflect one dimension in the state space and the values
+#   included in the RectangleGrid within each dimension reflecting
+#   some discretization of that dimension.
+# - Implement big_to_small, which converts from instances of the big_mdp state
+#   objects into instances of the tiny_mdp state objects.  For instance, the
+#   initial state might be ContinuousProblemState that has three variables,
+#   where variable 1 ranges from 0 to 1000, variable 2 ranges from -10 to 10,
+#   and variable 3 ranges from -10 to 100.  The RectangleGrid might look like:
+#   RectangleGrid(collect(0:100:1000), collect(-10:0.5:10), collect(-10:10:100))
+#   The tiny_mdp might contain ContinuousProblemState(0,-10,-10) -- or it might
+#   instead be a new state space where var1 ranges from 0->10 by 1, var2 ranges from 
+#   -20->20 by 1, and var3 ranges from -1->10 by 1. Alternatively, the tiny_mdp 
+#   might be in the original space, and the big_to_small transform might be
+#   the identity.  Alternatively, the tiny_mdp might be in the gridworld.
+# - Implement the type TinyMDP that is an MDP containing your big MDP, the 
+#   smaller MDP you construct from the big MDP, and the grid.  TinyMDP uses
+#   whatever state and action spaces the user implements.
+# - Use the RectangularValueIterationSolver on the user-implemented TinyMDP type,
+#   with no further changes.
 
 # The TinyMDP type, which builds a much smaller MDP from a larger MDP
 # at intervals specified by the user
-function big_to_small(s::GridWorldState, grid)
-    # Converts from big-size GridWorldState instances to small-size GridWorldState instances
+function big_to_small(s::GridWorldState, grid::RectangleGrid)
+    # Converts from big_mdp-state instances to small-size GridWorldState instances
+	# that appear on the provided grid
+	# For the GridWorld problem, the tiny_mdp is simply a smaller discretized
+	# MDP -- this is the transform function from a state in the large m-by-n space to
+	# state in the smaller gridworld space indexed by (1 to m/discretization) and
+	# (1 to n/discretization) cells.
     nrows = size(grid.cutPoints)[1]
     ncols = size(grid.cutPoints[1])[1]
     locs, weights = interpolants(grid, [s.x, s.y])
@@ -71,7 +105,7 @@ type RectangularValueIterationSolver <: Solver
     belres::Float64 # the Bellman Residual
 	
 	# Default constructor
-	function RectangularValueIterationSolver(tiny_mdp::TinyMDP, max_iterations::Int64=100, belres::Float64=1e-3)
+	function RectangularValueIterationSolver(tiny_mdp::Union{MDP,POMDP}, max_iterations::Int64=100, belres::Float64=1e-3)
 		self = new()
 		self.tiny_mdp = tiny_mdp
 		self.max_iterations = max_iterations
