@@ -26,6 +26,18 @@
 #   with no further changes.
 
 
+# Requires a grid::AbstractGrid with `interpolate` and `interpolants` defined according
+# to the interface in GridInterpolations.jl. 
+
+
+# Any Tiny*MDP will require these properties to work with LocallyWeightedValueIterationSolver:
+# - big::Union{MDP,POMDP}
+# - small::Union{MDP,POMDP}
+# - grid::AbstractGrid with `interpolate` and `interpolants` defined according
+#   to the interface in GridInterpolations.jl. 
+# See TinyGridWorldMDP.jl for an example implementation.
+
+
 # Example implementations of the expected class (Tiny*MDP) are in the test folder.
 
 # The solver type 
@@ -60,7 +72,7 @@ end
 
 function action{S,A}(policy::LocallyWeightedValueIterationPolicy, s::S, a::A=nothing)
 	action_quality = Base.Collections.PriorityQueue() # lowest is at top
-    locs, weights = interpolants(policy.grid, [s.x, s.y])
+    locs, weights = interpolants(policy.grid, [s.x, s.y]) ########################################################
 	for i in 1:length(locs)
 		basis_state = locs[i]
 		act = policy.subspace_policy.policy[basis_state]
@@ -74,6 +86,6 @@ function action{S,A}(policy::LocallyWeightedValueIterationPolicy, s::S, a::A=not
 end
 
 function value{S}(policy::LocallyWeightedValueIterationPolicy, s::S)
-	interpolate(policy.grid, policy.subspace_policy.util, [s.x, s.y])
+	interpolate(policy.grid, policy.subspace_policy.util, [s.x, s.y]) ########################################################
 end
 

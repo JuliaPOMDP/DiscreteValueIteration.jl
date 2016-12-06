@@ -1,6 +1,7 @@
 # The Tiny*MDP type builds a much smaller MDP from a larger MDP
-# at intervals specified by the user in a grid or simplex.  It stores the original MPP,
-# the discretized smaller MDP, and the grid or simplex. 
+# at intervals specified by the user in a grid or simplex.  
+# It stores the original MPP, the discretized smaller MDP, and 
+# the grid or simplex. 
 
 using GridInterpolations
 
@@ -21,6 +22,9 @@ function big_to_small(s::GridWorldState, grid::AbstractGrid)
 end
 
 type TinyGridWorldMDP <: MDP{GridWorldState, GridWorldAction}
+	# TinyGridWorldMDP builds a tiny discretized gridworld based on a 
+	# large gridworld big_mdp and a grid provided by the user.
+
     big::GridWorld
     small::GridWorld
     grid::AbstractGrid
@@ -31,7 +35,7 @@ type TinyGridWorldMDP <: MDP{GridWorldState, GridWorldAction}
         self.big = big_mdp
         self.grid = grid
 
-		@assert length(self.grid.cutPoints) == 2
+		@assert length(self.grid.cutPoints) == 2 # as per POMDPModels.GridWorld
         sx = length(self.grid.cutPoints[1])
         sy = length(self.grid.cutPoints[2])
 
