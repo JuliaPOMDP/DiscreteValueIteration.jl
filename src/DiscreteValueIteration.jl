@@ -37,10 +37,9 @@ export
 include("policy.jl")
 include("vanilla.jl")
 
-include("rectangular.jl")
+include("multilinear_interpolation.jl")
 export
-	RectangularValueIterationSolver,
-	TinyGridWorldMDP # primarily exported for testing; is there a better way?
+	MultilinearInterpolationValueIterationSolver
 
 include("docs.jl")
 
