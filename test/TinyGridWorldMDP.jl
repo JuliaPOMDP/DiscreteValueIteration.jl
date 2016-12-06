@@ -1,6 +1,6 @@
 # The Tiny*MDP type builds a much smaller MDP from a larger MDP
 # at intervals specified by the user in a grid or simplex.  
-# It stores the original MPP, the discretized smaller MDP, and 
+# It stores the original MDP, the discretized smaller MDP, and 
 # the grid or simplex. 
 
 using GridInterpolations
