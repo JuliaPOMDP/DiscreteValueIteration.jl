@@ -133,7 +133,9 @@ function test_locally_weighted()
 
 	bmdp = GridWorld(sx=6, sy=6, rs=[GridWorldState(6,2)], rv = [10.0])
 
-	solver = RectangularValueIterationSolver(bmdp, [2,5], [2,5])
+	
+	tiny = TinyGridWorldMDP(bmdp, [2,5], [2,5])
+	solver = RectangularValueIterationSolver(tiny)
 	policy = create_policy(solver, bmdp) 
 	pp = solve(solver, bmdp, policy, verbose=true)
 
@@ -154,7 +156,7 @@ end
 function test_correct_conversion_to_gridworld()
 	big_mdp = GridWorld(sx=6, sy=6, rs=[GridWorldState(6,2), GridWorldState(5,1)], rv = [10.0, 5.0])
 	mdp_indices = [2,5]
-	tiny_mdp = TinyMDP(big_mdp, mdp_indices, mdp_indices)
+	tiny_mdp = TinyGridWorldMDP(big_mdp, mdp_indices, mdp_indices)
 
 	return (length(tiny_mdp.small.reward_states) == 1) && 
 		(tiny_mdp.small.reward_states[1] == GridWorldState(2,1) ) &&

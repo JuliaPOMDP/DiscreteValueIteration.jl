@@ -40,7 +40,7 @@ include("vanilla.jl")
 include("rectangular.jl")
 export
 	RectangularValueIterationSolver,
-	TinyMDP # primarily exported for testing; is there a better way?
+	TinyGridWorldMDP # primarily exported for testing; is there a better way?
 
 include("docs.jl")
 

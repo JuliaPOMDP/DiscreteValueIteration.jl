@@ -56,12 +56,12 @@ end
 @assert big_to_small(GridWorldState(7,15), RectangleGrid([2,5], [2,5,10])) == GridWorldState(2,3)
 @assert big_to_small(GridWorldState(6,0), RectangleGrid([2,5], [2,5,10])) == GridWorldState(2,1)
 
-type TinyMDP <: MDP{GridWorldState, GridWorldAction}
+type TinyGridWorldMDP <: MDP{GridWorldState, GridWorldAction}
     big::GridWorld
     small::GridWorld
     grid
 
-    function TinyMDP(big_mdp::GridWorld, x_indices::Array{Int}, y_indices::Array{Int})
+    function TinyGridWorldMDP(big_mdp::GridWorld, x_indices::Array{Int}, y_indices::Array{Int})
         self = new()
         
         self.big = big_mdp
@@ -111,10 +111,6 @@ type RectangularValueIterationSolver <: Solver
 		self.max_iterations = max_iterations
 		self.belres = belres
 		return self
-	end
-	function RectangularValueIterationSolver(big_mdp::Union{MDP,POMDP}, x_indices::Array{Int}, y_indices::Array{Int}; max_iterations::Int64=100, belres::Float64=1e-3)
-		tiny = TinyMDP(big_mdp, x_indices, y_indices)
-		return RectangularValueIterationSolver(tiny, max_iterations, belres)
 	end
 end
 
