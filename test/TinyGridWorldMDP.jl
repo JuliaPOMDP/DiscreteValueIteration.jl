@@ -1,10 +1,10 @@
 # The Tiny*MDP type builds a much smaller MDP from a larger MDP
-# at intervals specified by the user in a grid.  It stores the original MPP,
-# the discretized smaller MDP, and the grid. 
+# at intervals specified by the user in a grid or simplex.  It stores the original MPP,
+# the discretized smaller MDP, and the grid or simplex. 
 
 using GridInterpolations
 
-function big_to_small(s::GridWorldState, grid::RectangleGrid)
+function big_to_small(s::GridWorldState, grid::AbstractGrid)
 	# Helper function.
     # Converts from big_mdp-state instances to small-size GridWorldState instances
 	# that appear on the provided grid
@@ -23,16 +23,17 @@ end
 type TinyGridWorldMDP <: MDP{GridWorldState, GridWorldAction}
     big::GridWorld
     small::GridWorld
-    grid
+    grid::AbstractGrid
 
-    function TinyGridWorldMDP(big_mdp::GridWorld, x_indices::Array{Int}, y_indices::Array{Int})
+    function TinyGridWorldMDP(big_mdp::GridWorld, grid::AbstractGrid)
         self = new()
         
         self.big = big_mdp
-        self.grid = RectangleGrid(x_indices, y_indices)
+        self.grid = grid
 
-        sx = length(x_indices)
-        sy = length(y_indices)
+		@assert length(self.grid.cutPoints) == 2
+        sx = length(self.grid.cutPoints[1])
+        sy = length(self.grid.cutPoints[2])
 
         reward_states_to_values = Dict()
         for i in 1:length(big_mdp.reward_states)

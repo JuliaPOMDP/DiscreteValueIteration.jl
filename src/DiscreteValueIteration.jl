@@ -37,9 +37,9 @@ export
 include("policy.jl")
 include("vanilla.jl")
 
-include("multilinear_interpolation.jl")
+include("locally_weighted_interpolation.jl")
 export
-	MultilinearInterpolationValueIterationSolver
+	LocallyWeightedValueIterationSolver
 
 include("docs.jl")
 

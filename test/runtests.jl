@@ -20,7 +20,8 @@ include("runtests_tiny_gridworld.jl")
 
 
 # Test locally approximate value iteration
-include("runtests_multilinear_interpolation_value_iteration.jl")
+# includes multilinear, simplex interpolation
+include("runtests_locally_weighted_value_iteration.jl")
 
 
 

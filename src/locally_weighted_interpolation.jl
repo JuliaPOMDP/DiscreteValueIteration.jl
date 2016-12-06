@@ -1,6 +1,6 @@
-# The multilinear (rectangular) weighted discrete value iteration solver 
+# The locally weighted discrete value iteration solver 
 # solves for states according to a local weighting function
-# that uses multilinear interpolation.
+# that uses multilinear or simplex interpolation.
 # The user needs to do the following:
 # - Write the big_mdp object. This might be a continuous MDP or a high-
 #   dimensional MDP. If we continue & use the RectangularValueIterationSolver, 
@@ -22,20 +22,20 @@
 # - Implement the type TinyMDP that is an MDP containing your big MDP, the 
 #   smaller MDP you construct from the big MDP, and the grid.  TinyMDP uses
 #   whatever state and action spaces the user implements.
-# - Use the MultilinearInterpolationValueIterationSolver on the user-implemented TinyMDP type,
+# - Use the LocallyWeightedValueIterationSolver on the user-implemented TinyMDP type,
 #   with no further changes.
 
 
 # Example implementations of the expected class (Tiny*MDP) are in the test folder.
 
 # The solver type 
-type MultilinearInterpolationValueIterationSolver <: Solver
-	tiny_mdp::Union{MDP,POMDP} # builds a grid world per user request
+type LocallyWeightedValueIterationSolver <: Solver
+	tiny_mdp::Union{MDP,POMDP} # a solvable MDP (smaller, discrete)
     max_iterations::Int64 # max number of iterations 
     belres::Float64 # the Bellman Residual
 	
 	# Default constructor
-	function MultilinearInterpolationValueIterationSolver(tiny_mdp::Union{MDP,POMDP}, max_iterations::Int64=100, belres::Float64=1e-3)
+	function LocallyWeightedValueIterationSolver(tiny_mdp::Union{MDP,POMDP}, max_iterations::Int64=100, belres::Float64=1e-3)
 		self = new()
 		self.tiny_mdp = tiny_mdp
 		self.max_iterations = max_iterations
@@ -45,12 +45,12 @@ type MultilinearInterpolationValueIterationSolver <: Solver
 end
 
 # returns a default value iteration policy
-function create_policy(solver::MultilinearInterpolationValueIterationSolver, mdp::Union{MDP,POMDP})
+function create_policy(solver::LocallyWeightedValueIterationSolver, mdp::Union{MDP,POMDP})
     return LocallyWeightedValueIterationPolicy(mdp, solver.tiny_mdp.grid)
 end
 
 # runs the value iteration algorithm
-function solve(solver::MultilinearInterpolationValueIterationSolver, big_mdp::Union{MDP,POMDP}, policy::LocallyWeightedValueIterationPolicy; verbose::Bool=false)
+function solve(solver::LocallyWeightedValueIterationSolver, big_mdp::Union{MDP,POMDP}, policy::LocallyWeightedValueIterationPolicy; verbose::Bool=false)
 	limitedSolver = ValueIterationSolver()
     p = create_policy(limitedSolver, solver.tiny_mdp.small) 
     p = solve(limitedSolver, solver.tiny_mdp.small, p, verbose=true)

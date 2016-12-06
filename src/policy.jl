@@ -83,9 +83,9 @@ end
 
 type LocallyWeightedValueIterationPolicy <: Policy
 	subspace_policy::ValueIterationPolicy
-	grid::RectangleGrid
+	grid::AbstractGrid
 	
-    function LocallyWeightedValueIterationPolicy(mdp::Union{MDP,POMDP}, grid::RectangleGrid)
+    function LocallyWeightedValueIterationPolicy(mdp::Union{MDP,POMDP}, grid::AbstractGrid)
         self = new()
 		self.subspace_policy = ValueIterationPolicy(mdp)
 		self.grid = grid
