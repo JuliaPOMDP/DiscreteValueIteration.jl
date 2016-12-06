@@ -10,7 +10,7 @@ end
 
 # The policy type
 type ValueIterationPolicy <: Policy
-    qmat::Matrix{Float64} # Q matrix stroign Q(s,a) values
+    qmat::Matrix{Float64} # Q matrix storing Q(s,a) values
     util::Vector{Float64} # The value function V(s)
     policy::Vector{Int64} # Policy array, maps state index to action index
     action_map::Vector # Maps the action index to the concrete action type
@@ -29,7 +29,7 @@ type ValueIterationPolicy <: Policy
         else
             self.util = zeros(ns)
         end
-        self.action_map = create_action_map(mdp)
+        self.action_map = ordered_actions(mdp)
         self.policy = zeros(Int64,ns)
         include_Q ? self.qmat = zeros(ns,na) : self.qmat = zeros(0,0)
         self.include_Q = include_Q
@@ -42,7 +42,7 @@ type ValueIterationPolicy <: Policy
         self.qmat = q
         self.util = util
         self.policy = policy
-        self.action_map = create_action_map(mdp)
+        self.action_map = ordered_actions(mdp)
         self.include_Q = true
         self.mdp = mdp
         return self
@@ -60,7 +60,7 @@ type ValueIterationPolicy <: Policy
         self.qmat = q
         self.util = u
         self.policy = p
-        self.action_map = create_action_map(mdp)
+        self.action_map = ordered_actions(mdp)
         self.include_Q = true
         self.mdp = mdp
         return self
@@ -75,22 +75,6 @@ end
 # returns the fields of the policy type
 function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
-end
-
-"""
-Create an action map for the policy.
-"""
-function create_action_map{S,A}(mdp::MDP{S,A})
-    ait = iterator(actions(mdp))
-    am = Array(A, n_actions(mdp))
-    gotten = falses(n_actions(mdp))
-    for a in ait
-        aid = action_index(mdp, a)
-        am[aid] = a
-        gotten[aid] = true
-    end
-    @assert all(gotten)
-    return am
 end
 
 #####################################################################
@@ -124,22 +108,14 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
     iter_time = 0.0
 
     # create an ordered list of states for fast iteration
-    sit = iterator(states(mdp))
-    ordered_states = Array(S, n_states(mdp))
-    gotten = falses(n_states(mdp))
-    for s in sit
-        sid = state_index(mdp, s)
-        ordered_states[sid] = s
-        gotten[sid] = true
-    end
-    @assert all(gotten)
+    states = ordered_states(mdp)
 
     # main loop
     for i = 1:max_iterations
         residual = 0.0
         tic()
         # state loop
-        for (istate,s) in enumerate(ordered_states)
+        for (istate,s) in enumerate(states)
             old_util = util[istate] # for residual 
             max_util = -Inf
             # action loop
