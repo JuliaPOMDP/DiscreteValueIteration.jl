@@ -148,10 +148,6 @@ function test_knnfast_2()
 	correct_policy = [4,1,2,2,1]
 	correct_utility = [9.11869,10.0,8.66276,9.11889,0.0]
 	
-	@show value(policy, GridWorldState(2,1))
-	@show value(policy, GridWorldState(2,4))
-	@show value(policy, GridWorldState(5,0))
-	
 	# test the policy, utility, value at a gridpoint, value requiring interpolation
 	return (pp.subspace_policy.policy == correct_policy) &&
 			(isapprox(pp.subspace_policy.util, correct_utility, rtol=1e-5)) &&

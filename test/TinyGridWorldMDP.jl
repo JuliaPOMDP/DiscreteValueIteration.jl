@@ -12,12 +12,18 @@ function big_to_small(s::GridWorldState, grid::AbstractGrid)
 	# For the GridWorld problem, the tiny_mdp is simply a smaller discretized
 	# MDP -- this is the transform function from a state in the large m-by-n space to
 	# state in the smaller gridworld space indexed by (1 to m/discretization) and
-	# (1 to n/discretization) cells.
-    nrows = size(grid.cutPoints)[1]
-    ncols = size(grid.cutPoints[1])[1]
-    locs, weights = interpolants(grid, [s.x, s.y])
-    mxweight, mxindx = findmax(weights,1)
-    x,y = ind2sub((nrows, ncols), locs[mxindx...])
+	# (1 to n/discretization) cells
+	@assert length(grid.cutPoints) == 2 "Expecting two-dimensional grids of cutpoints"
+	
+	xvec = sort(grid.cutPoints[1])
+	xboundaries = xvec[1:end-1] + (xvec[2:end] - xvec[1:end-1])/2
+
+	yvec = sort(grid.cutPoints[2])
+	yboundaries = yvec[1:end-1] + (yvec[2:end] - yvec[1:end-1])/2
+
+	x = searchsortedfirst(xboundaries, s.x)
+	y = searchsortedfirst(yboundaries, s.y)
+	
     return GridWorldState(x,y)
 end
 

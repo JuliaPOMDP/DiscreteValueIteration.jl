@@ -72,7 +72,7 @@ end
 
 function action{S,A}(policy::LocallyWeightedValueIterationPolicy, s::S, a::A=nothing)
 	action_quality = Base.Collections.PriorityQueue() # lowest is at top
-    locs, weights = interpolants(policy.grid, [s.x, s.y]) ########################################################
+    locs, weights = interpolants(policy.grid, [s.x, s.y]) 
 	for i in 1:length(locs)
 		basis_state = locs[i] # reflects the order of the data provided (util)
 		act = policy.subspace_policy.policy[basis_state]
@@ -86,7 +86,7 @@ function action{S,A}(policy::LocallyWeightedValueIterationPolicy, s::S, a::A=not
 end
 
 function value{S}(policy::LocallyWeightedValueIterationPolicy, s::S)
-	interpolate(policy.grid, policy.subspace_policy.util, [s.x, s.y]) ########################################################
+	interpolate(policy.grid, policy.subspace_policy.util, [s.x, s.y]) 
 end
 
 
