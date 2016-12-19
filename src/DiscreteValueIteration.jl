@@ -25,6 +25,7 @@ import POMDPs: Solver, solve, Policy, create_policy, action, value
 export
     ValueIterationPolicy,
     ValueIterationSolver,
+    ParallelValueIterationSolver,
     create_policy,
     solve,
     action,
@@ -32,6 +33,7 @@ export
     locals
 
 include("vanilla.jl")
+include("parallel.jl")
 include("docs.jl")
 
 end # module
