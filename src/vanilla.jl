@@ -77,6 +77,32 @@ function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
 end
 
+#=
+@POMDP_require solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}) begin
+    P = typeof(mdp)
+    S = state_type(P)
+    A = action_type(P)
+    @req discount(::P)
+    @req n_states(::P)
+    @req n_actions(::P)
+    @subreq ordered_states(mdp)
+    @subreq ordered_actions(mdp)
+    @req transition(::P,::S,::A)
+    @req reward(::P,::S,::A,::S)
+    @req state_index(::P,::S)
+    as = actions(mdp)
+    ss = states(mdp)
+    @req iterator(::typeof(as))
+    @req iterator(::typeof(ss))
+    s = first(iterator(ss))
+    a = first(iterator(as))
+    dist = transition(mdp, s, a)
+    D = typeof(dist)
+    @req iterator(::D)
+    @req pdf(::D,::S)
+end
+=#
+
 #####################################################################
 # Solve runs the value iteration algorithm.
 # The policy input argument is either provided by the user or 
@@ -90,6 +116,8 @@ end
 #####################################################################
 function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
+    # @warn_requirements solve(solver, mdp)
+
     # solver parameters
     max_iterations = solver.max_iterations
     belres = solver.belres
@@ -100,9 +128,6 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
     qmat = policy.qmat
     include_Q = policy.include_Q
     pol = policy.policy 
-
-    # pre-allocate the transtion distirbution and the interpolants
-    dist = create_transition_distribution(mdp)
 
     total_time = 0.0
     iter_time = 0.0
@@ -121,7 +146,7 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
             for (iaction, a) in enumerate(policy.action_map)
-                dist = transition(mdp, s, a, dist) # fills distribution over neighbors
+                dist = transition(mdp, s, a) # creates distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
