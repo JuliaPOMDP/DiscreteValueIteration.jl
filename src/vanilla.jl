@@ -77,7 +77,6 @@ function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
 end
 
-#=
 @POMDP_require solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}) begin
     P = typeof(mdp)
     S = state_type(P)
@@ -101,7 +100,6 @@ end
     @req iterator(::D)
     @req pdf(::D,::S)
 end
-=#
 
 #####################################################################
 # Solve runs the value iteration algorithm.
