@@ -19,8 +19,9 @@ This module implements a value iteration solver that uses the interface defined 
 module DiscreteValueIteration
 
 using POMDPs
+using POMDPToolbox
 
-import POMDPs: Solver, solve, Policy, create_policy, action, value 
+import POMDPs: Solver, solve, Policy, action, value 
 
 export
     ValueIterationPolicy,

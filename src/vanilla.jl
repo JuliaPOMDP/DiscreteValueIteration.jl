@@ -10,10 +10,10 @@ end
 
 # The policy type
 type ValueIterationPolicy <: Policy
-    qmat::Matrix{Float64} # Q matrix stroign Q(s,a) values
+    qmat::Matrix{Float64} # Q matrix storing Q(s,a) values
     util::Vector{Float64} # The value function V(s)
     policy::Vector{Int64} # Policy array, maps state index to action index
-    action_map::Vector{Any} # Maps the action index to the concrete action type
+    action_map::Vector # Maps the action index to the concrete action type
     include_Q::Bool # Flag for including the Q-matrix
     mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
     # constructor with an optinal initial value function argument
@@ -29,12 +29,7 @@ type ValueIterationPolicy <: Policy
         else
             self.util = zeros(ns)
         end
-        am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
-            push!(am, a)
-        end
-        self.action_map = am
+        self.action_map = ordered_actions(mdp)
         self.policy = zeros(Int64,ns)
         include_Q ? self.qmat = zeros(ns,na) : self.qmat = zeros(0,0)
         self.include_Q = include_Q
@@ -47,12 +42,7 @@ type ValueIterationPolicy <: Policy
         self.qmat = q
         self.util = util
         self.policy = policy
-        am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
-            push!(am, a)
-        end
-        self.action_map = am
+        self.action_map = ordered_actions(mdp)
         self.include_Q = true
         self.mdp = mdp
         return self
@@ -66,18 +56,12 @@ type ValueIterationPolicy <: Policy
             p[i] = indmax(q[i,:])
             u[i] = maximum(q[i,:])
         end
-        am = Any[]
-        space = actions(mdp)
-        for a in iterator(space)
-            push!(am, a)
-        end
         self = new()
         self.qmat = q
         self.util = u
         self.policy = p
-        self.action_map = am
+        self.action_map = ordered_actions(mdp)
         self.include_Q = true
-        self.action_map = am
         self.mdp = mdp
         return self
     end
@@ -93,6 +77,32 @@ function locals(p::ValueIterationPolicy)
     return (p.qmat,p.util,p.policy,p.action_map)
 end
 
+@POMDP_require solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}) begin
+    P = typeof(mdp)
+    S = state_type(P)
+    A = action_type(P)
+    @req discount(::P)
+    @req n_states(::P)
+    @req n_actions(::P)
+    @subreq ordered_states(mdp)
+    @subreq ordered_actions(mdp)
+    @req transition(::P,::S,::A)
+    @req reward(::P,::S,::A,::S)
+    @req state_index(::P,::S)
+    @req action_index(::P, ::A)
+    @req actions(::P, ::S)
+    as = actions(mdp)
+    ss = states(mdp)
+    @req iterator(::typeof(as))
+    @req iterator(::typeof(ss))
+    s = first(iterator(ss))
+    a = first(iterator(as))
+    dist = transition(mdp, s, a)
+    D = typeof(dist)
+    @req iterator(::D)
+    @req pdf(::D,::S)
+end
+
 #####################################################################
 # Solve runs the value iteration algorithm.
 # The policy input argument is either provided by the user or 
@@ -104,7 +114,9 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
+function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}}, policy=create_policy(solver, mdp); verbose::Bool=false)
+
+    # @warn_requirements solve(solver, mdp)
 
     # solver parameters
     max_iterations = solver.max_iterations
@@ -115,50 +127,48 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     util = policy.util
     qmat = policy.qmat
     include_Q = policy.include_Q
+    if include_Q
+	qmat[:] = 0.0
+    end
     pol = policy.policy 
-
-    # pre-allocate the transtion distirbution and the interpolants
-    dist = create_transition_distribution(mdp)
-
-    # initalize space
-    sspace = states(mdp)
-    aspace = actions(mdp)
 
     total_time = 0.0
     iter_time = 0.0
+
+    # create an ordered list of states for fast iteration
+    states = ordered_states(mdp)
 
     # main loop
     for i = 1:max_iterations
         residual = 0.0
         tic()
         # state loop
-        for s in iterator(sspace)
-            sidx = state_index(mdp, s)
-            old_util = util[sidx] # for residual 
+        for (istate,s) in enumerate(states)
+            old_util = util[istate] # for residual 
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            sub_aspace = POMDPs.actions(mdp, s, aspace)
-            for a in iterator(aspace)
-                aidx = action_index(mdp, a)
-                transition(mdp, s, a, dist) # fills distribution over neighbors
+            sub_aspace = POMDPs.actions(mdp, s)
+            for a in iterator(sub_aspace)
+                iaction = action_index(mdp, a)
+                dist = transition(mdp, s, a) # creates distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
                     r = reward(mdp, s, a, sp)
-                    spidx = state_index(mdp, sp)
-                    u += p * (r + discount_factor * util[spidx]) 
+                    isp = state_index(mdp, sp)
+                    u += p * (r + discount_factor * util[isp]) 
                 end
                 new_util = u 
                 if new_util > max_util
                     max_util = new_util
-                    pol[sidx] = aidx
+                    pol[istate] = iaction
                 end
-                include_Q ? (qmat[sidx, aidx] = new_util) : nothing
+                include_Q ? (qmat[istate, iaction] = new_util) : nothing
             end # action
             # update the value array
-            util[sidx] = max_util 
+            util[istate] = max_util 
             diff = abs(max_util - old_util)
             diff > residual ? (residual = diff) : nothing
         end # state
@@ -175,8 +185,8 @@ function action{S}(policy::ValueIterationPolicy, s::S)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
+
 function value{S}(policy::ValueIterationPolicy, s::S)
     sidx = state_index(policy.mdp, s)
     policy.util[sidx]
 end
-

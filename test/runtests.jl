@@ -3,7 +3,6 @@ using POMDPModels
 using POMDPs
 using Base.Test
 
-
 function serial_qtest(mdp::Union{MDP,POMDP}, file::AbstractString; niter::Int64=100, res::Float64=1e-3)
     qt = readdlm(file)
     solver = ValueIterationSolver(max_iterations=niter, belres=res)
@@ -35,3 +34,5 @@ res = 1e-3
 @test serial_qtest(mdp, file, niter=niter, res=res) == true
 println("Finished serial tests")
 
+println("Testing Requirements")
+@requirements_info ValueIterationSolver() mdp
