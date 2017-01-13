@@ -114,9 +114,9 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}}, policy=create_policy(solver, mdp); verbose::Bool=false)
+function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
-    # @warn_requirements solve(solver, mdp)
+    @warn_requirements solve(solver, mdp)
 
     # solver parameters
     max_iterations = solver.max_iterations
@@ -148,7 +148,7 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            sub_aspace = POMDPs.actions(mdp, s)
+            sub_aspace = actions(mdp, s)
             for a in iterator(sub_aspace)
                 iaction = action_index(mdp, a)
                 dist = transition(mdp, s, a) # creates distribution over neighbors
