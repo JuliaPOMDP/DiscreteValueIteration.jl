@@ -6,9 +6,10 @@
 # n_actions(mdp::POMDP)
 # discount(mdp::POMDP)
 # states(mdp::POMDP)
-# actions(mdp::POMDP)
+# actions(mdp::POMDP, s::State)
 # transition(mdp::POMDP, s::State, a::Action)
 # reward(mdp::POMDP, s::State, a::Action)
+# state_index(mdp, s)
 # index(mdp::POMDP, s::State)
 # domain(space::AbstractSpace) # state and action spaces
 # create_transition_distribution(mdp::POMDP)

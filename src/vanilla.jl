@@ -24,7 +24,7 @@ type ValueIterationPolicy <: Policy
         na = n_actions(mdp)
         self = new()
         if !isempty(utility)
-            @assert size(utilty) == ns "Input utility dimension mismatch"
+            @assert first(size(utility)) == ns "Input utility dimension mismatch"
             self.util = utility
         else
             self.util = zeros(ns)
