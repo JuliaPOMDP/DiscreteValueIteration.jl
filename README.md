@@ -19,17 +19,31 @@ POMDPs.add("DiscreteValueIteration")
 
 ## Usage
 
-The following functions must be defined in order to use DiscreteValueIteration:
+Use
 
 ```julia
-discount(mdp::POMDP) # returns the discount factor
-states(mdp::POMDP) # returns the state space 
-n_states(mdp::POMDP)
-n_actions(mdp::POMDP)
-actions(mdp::POMDP, s::State) # returns the action space from the state s
-transition(mdp::POMDP, s::State, a::Action) # creates a distribution over neighboring states reachable from the s,a pair
-reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a
-pdf(d, s::State) #  value of probability distribution function at state s
+using POMDPs
+using DiscreteValueIteration
+@requirements_info ValueIterationSolver() YourMDP()
+```
+
+to get a list of POMDPs.jl functions necessary to use the solver. This should return a list of the following functions to be implemented for your MDP:
+
+```julia
+discount(::MDP)
+n_states(::MDP)
+n_actions(::MDP)
+transition(::MDP, ::State, ::Action)
+reward(::MDP, ::State, ::Action, ::State)
+state_index(::MDP, ::State)
+action_index(::MDP, ::Action)
+actions(::MDP, ::State)
+iterator(::ActionSpace)
+iterator(::StateSpace)
+iterator(::StateDistribution)
+pdf(::StateDistribution, ::State)
+states(::MDP)
+actions(::MDP)
 ```
 
 Once the above functions are defined, the solver can be called with the following syntax:
@@ -49,91 +63,3 @@ To extract the policy for a given state, simply call the action function:
 s = create_state(mdp) # this can be any valid state
 a = action(polciy, s) # returns the optimal action for state s
 ```
-
-<!---
-To use the DiscreteValueIteration module, begin your code by adding the maximum number of processors you would like to
-use, and export the module
-
-```julia
-addprocs(10) # this is the maximum number of processors you would like to use
-using ParallelValueIteration
-```
-
-Note: if you plan on using only the serial solver, you can ignore the addprocs command
-
-To use the solver with your MDP, follow the API defined in DiscreteMDPs.jl. Define the following functions in your MDP module (see GridWolrd_.jl for a detailed example):
-
-```julia
-states(mdp::YourMDP) # returns an iterator over MDP states
-actions(mdp::YourMDP) # returns an iterator over MDP actions
-numStates(mdp::YourMDP) # returns the number of states
-numActions(mdp::YourMDP) # returns the number of actions
-nextStates(mdp::YourMDP, state, action) # returns arrays neighboring states and their probabilities e.g. (states, probs)
-reward(mdp::YourMDP, state, action)
-```
-
-## Serial Solver
-
-The module defines a SerialSolver type that can be initialized in the following way:
-
-```julia
-maxIterations = 50 # maximum number of iterations in the DP loop
-tolerance = 1e-2   # Bellman residual
-gs = true          # Gauss-Siedel falg
-includeV = true    # return utility flag
-includeQ = true    # return Q-matrix flag
-includeA = false   # return policy flag
-solver = SerialSolver(maxIterations=maxIterations, tolerance=tolerance, gaussSiedel=gs,
-                      includeV=includeV, includeQ=includeQ, includeA=includeA)
-solver = SerialSolver(maxIterations=50) # this also works
-```
-
-To solve the MDP:
-
-```julia
-mdp = AwesomeMDPType(arguments) # your MDP 
-policy = solve(solver, mdp) # solve using value iteration
-```
-
-## Parallel Solver
-
-The module defines a ParallelSolver type that has a single required input argument and a number of optional arguments.
-The following two arguments are availiable in addition to the ones defined for the SerivalSolver: 
-
-```julia
-# required input
-numProcs      = 8 # numbers of processors used by the solver
-# optional input
-stateOrder = {1:250,251:500} # default ordering is {1:numStates}
-solver = ParallelSolver(numProcs, stateOrder=stateOrder, maxIterations=maxIterations,
-                        tolerance=tolerance, gaussSiedel=gs,
-                        includeV=includeV, includeQ=includeQ, includeA=includeA)
-policy = solve(psolver, mdp) # the solve function returns the utility function and the Q-matrix
-```
-
-The state ordering is required for backwards induction value iteration, where the value function must be updated in a
-specific order. For MDPs that do not require a state ordering, the stateOrder variable is set to a default value.
-
-## Policy Solution
-
-To access the utility function, Q-matrix, or the policy, the following API is provided:
-
-```julia
-s = 1
-a = 1
-u  = value(policy, s) # expected optimal value for state s
-q  = value(policy, s, a) # expected value for state-action pair
-ap = action(policy, s) # action that maximizes the expected utility
-```
-
-
-## Tutorial
-
-An IJulia notebook tutorial is availiable with more details:
-
-[Tutorial](http://nbviewer.ipython.org/github/sisl/DiscreteValueIteration.jl/blob/master/test/Discrete-Value-Iteration.ipynb)
-
-## Improving Performance
-
-- The MDP type should be small (in memory size), to avoid unnecessary data copying to each processor
--->
