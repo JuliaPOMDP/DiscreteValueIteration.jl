@@ -24,7 +24,7 @@ type ValueIterationPolicy <: Policy
         na = n_actions(mdp)
         self = new()
         if !isempty(utility)
-            @assert size(utilty) == ns "Input utility dimension mismatch"
+            @assert first(size(utility)) == ns "Input utility dimension mismatch"
             self.util = utility
         else
             self.util = zeros(ns)
@@ -89,6 +89,8 @@ end
     @req transition(::P,::S,::A)
     @req reward(::P,::S,::A,::S)
     @req state_index(::P,::S)
+    @req action_index(::P, ::A)
+    @req actions(::P, ::S)
     as = actions(mdp)
     ss = states(mdp)
     @req iterator(::typeof(as))
@@ -112,9 +114,9 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true) 
 #####################################################################
-function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}}, policy=create_policy(solver, mdp); verbose::Bool=false)
+function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
-    # @warn_requirements solve(solver, mdp)
+    @warn_requirements solve(solver, mdp)
 
     # solver parameters
     max_iterations = solver.max_iterations
@@ -125,6 +127,9 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
     util = policy.util
     qmat = policy.qmat
     include_Q = policy.include_Q
+    if include_Q
+	qmat[:] = 0.0
+    end
     pol = policy.policy 
 
     total_time = 0.0
@@ -143,15 +148,17 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
             max_util = -Inf
             # action loop
             # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-            for (iaction, a) in enumerate(policy.action_map)
+            sub_aspace = actions(mdp, s)
+            for a in iterator(sub_aspace)
+                iaction = action_index(mdp, a)
                 dist = transition(mdp, s, a) # creates distribution over neighbors
                 u = 0.0
                 for sp in iterator(dist)
                     p = pdf(dist, sp)
                     p == 0.0 ? continue : nothing # skip if zero prob
                     r = reward(mdp, s, a, sp)
-                    sidx = state_index(mdp, sp)
-                    u += p * (r + discount_factor * util[sidx]) 
+                    isp = state_index(mdp, sp)
+                    u += p * (r + discount_factor * util[isp]) 
                 end
                 new_util = u 
                 if new_util > max_util
@@ -173,7 +180,7 @@ function solve{S,A}(solver::ValueIterationSolver, mdp::Union{MDP{S,A},POMDP{S,A}
     policy
 end
 
-function action{S,A}(policy::ValueIterationPolicy, s::S, a::A=nothing)
+function action{S}(policy::ValueIterationPolicy, s::S)
     sidx = state_index(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]

@@ -6,10 +6,6 @@
 This package implements the discrete value iteration algorithm in Julia for solving Markov decision processes (MDPs).
 The user should define the problem according to the API in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). Examples of
 problem definitions can be found in [POMDPModels.jl](https://github.com/JuliaPOMDP/POMDPModels.jl). For an extensive tutorial, see the [this](http://nbviewer.ipython.org/github/JuliaPOMDP/POMDPs.jl/blob/master/examples/GridWorld.ipynb) notebook.
-<!---
-A multi-core parallel solver is availiable as well. At the moment, Gauss-Siedel and
-vanilla value iteration solvers are provided.
--->
 
 ## Installation
 
@@ -28,11 +24,12 @@ The following functions must be defined in order to use DiscreteValueIteration:
 ```julia
 discount(mdp::POMDP) # returns the discount factor
 states(mdp::POMDP) # returns the state space 
-actions(mdp::POMDP) # returns the action space
-transition(mdp::POMDP, s::State, a::Action, d::AbstractDistribution) # fills d with neighboring states reachable from the s,a pair
+n_states(mdp::POMDP)
+n_actions(mdp::POMDP)
+actions(mdp::POMDP, s::State) # returns the action space from the state s
+transition(mdp::POMDP, s::State, a::Action) # creates a distribution over neighboring states reachable from the s,a pair
 reward(mdp::POMDP, s::State, a::Action) # returns the immediate reward of being in state s and performing action a
-pdf(d::AbstractDistribution, s::State) #  value of probability distribution function at state s
-create_transition_distribution(mdp::POMDP) # initializes a distirbution over states
+pdf(d, s::State) #  value of probability distribution function at state s
 ```
 
 Once the above functions are defined, the solver can be called with the following syntax:
@@ -50,7 +47,7 @@ To extract the policy for a given state, simply call the action function:
 
 ```julia
 s = create_state(mdp) # this can be any valid state
-a = action(mdp, polciy, s) # returns the optimal action for state s
+a = action(polciy, s) # returns the optimal action for state s
 ```
 
 <!---
