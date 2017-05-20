@@ -33,7 +33,7 @@ function POMDPs.actions(mdp::SpecialGridWorld, s::GridWorldState)
 	elseif sidx == 7
 		acts = [GridWorldAction(:up), GridWorldAction(:down), GridWorldAction(:left), GridWorldAction(:right)]
 	end
-	return GridWorldActionSpace(acts)
+	return acts
 end
 
 	
