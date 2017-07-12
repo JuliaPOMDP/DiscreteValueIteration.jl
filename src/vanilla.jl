@@ -1,6 +1,6 @@
-# The solver type 
-type ValueIterationSolver <: Solver
-    max_iterations::Int64 # max number of iterations 
+# The solver type
+mutable struct ValueIterationSolver <: Solver
+    max_iterations::Int64 # max number of iterations
     belres::Float64 # the Bellman Residual
 end
 # Default constructor
@@ -9,7 +9,7 @@ function ValueIterationSolver(;max_iterations::Int64=100, belres::Float64=1e-3)
 end
 
 # The policy type
-type ValueIterationPolicy <: Policy
+mutable struct ValueIterationPolicy <: Policy
     qmat::Matrix{Float64} # Q matrix storing Q(s,a) values
     util::Vector{Float64} # The value function V(s)
     policy::Vector{Int64} # Policy array, maps state index to action index
@@ -17,7 +17,7 @@ type ValueIterationPolicy <: Policy
     include_Q::Bool # Flag for including the Q-matrix
     mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
     # constructor with an optinal initial value function argument
-    function ValueIterationPolicy(mdp::Union{MDP,POMDP}; 
+    function ValueIterationPolicy(mdp::Union{MDP,POMDP};
                                   utility::Vector{Float64}=Array(Float64,0),
                                   include_Q::Bool=true)
         ns = n_states(mdp)
@@ -105,14 +105,14 @@ end
 
 #####################################################################
 # Solve runs the value iteration algorithm.
-# The policy input argument is either provided by the user or 
+# The policy input argument is either provided by the user or
 # initialized during the function call.
 # Verbose is a flag that triggers text output to the command line
 # Example code for running the function:
 # mdp = GridWorld(10, 10) # initialize a 10x10 grid world MDP (user written code)
 # solver = ValueIterationSolver(max_iterations=40, belres=1e-3)
 # policy = ValueIterationPolicy(mdp)
-# solve(solver, mdp, policy, verbose=true) 
+# solve(solver, mdp, policy, verbose=true)
 #####################################################################
 function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
 
@@ -130,7 +130,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     if include_Q
 	qmat[:] = 0.0
     end
-    pol = policy.policy 
+    pol = policy.policy
 
     total_time = 0.0
     iter_time = 0.0
@@ -149,7 +149,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                 util[istate] = 0.0
                 pol[istate] = 1
             else
-                old_util = util[istate] # for residual 
+                old_util = util[istate] # for residual
                 max_util = -Inf
                 # action loop
                 # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
@@ -162,10 +162,10 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                         p == 0.0 ? continue : nothing # skip if zero prob
                         r = reward(mdp, s, a, sp)
                         isp = state_index(mdp, sp)
-                        u += p * (r + discount_factor * util[isp]) 
-                        
+                        u += p * (r + discount_factor * util[isp])
+
                     end
-                    new_util = u 
+                    new_util = u
                     if new_util > max_util
                         max_util = new_util
                         pol[istate] = iaction
@@ -173,7 +173,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                     include_Q ? (qmat[istate, iaction] = new_util) : nothing
                 end # action
                 # update the value array
-                util[istate] = max_util 
+                util[istate] = max_util
                 diff = abs(max_util - old_util)
                 diff > residual ? (residual = diff) : nothing
             end
