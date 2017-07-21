@@ -1,4 +1,4 @@
-type SpecialGridWorld <: MDP{GridWorldState, GridWorldAction}
+mutable struct SpecialGridWorld <: MDP{GridWorldState, GridWorldAction}
     gw::GridWorld
 end
 
@@ -13,7 +13,7 @@ POMDPs.actions(g::SpecialGridWorld, s::GridWorldState) = actions(g.gw, s)
 POMDPs.states(g::SpecialGridWorld) = states(g.gw)
 POMDPs.actions(g::SpecialGridWorld) = actions(g.gw)
 
-# Let's extend actions to hard-code & limit to the 
+# Let's extend actions to hard-code & limit to the
 # particular feasible actions from each state....
 function POMDPs.actions(mdp::SpecialGridWorld, s::GridWorldState)
 	# up: 1, down: 2, left: 3, right: 4
@@ -36,7 +36,7 @@ function POMDPs.actions(mdp::SpecialGridWorld, s::GridWorldState)
 	return acts
 end
 
-	
+
 function test_conditioning_actions_on_state()
 	# Condition available actions on next state....
 	# GridWorld(sx=2,sy=3) w reward at (2,3):
@@ -49,13 +49,13 @@ function test_conditioning_actions_on_state()
 	# |1 (1,1)__l,r__|2 (2,1)_______u,r________|
 	# 7 (0,0) is absorbing state
     mdp = SpecialGridWorld(GridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
-	
+
 	solver = ValueIterationSolver()
     policy = create_policy(solver, mdp)
     policy = solve(solver, mdp, policy, verbose=true)
 
 	println(policy.policy)
-	
+
 	# up: 1, down: 2, left: 3, right: 4
 	correct_policy = [4,1,1,3,4,1,1] # alternative policies
 	# for state 6 are possible, but since they are ordered
