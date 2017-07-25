@@ -18,7 +18,7 @@ mutable struct ValueIterationPolicy <: Policy
     mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
     # constructor with an optinal initial value function argument
     function ValueIterationPolicy(mdp::Union{MDP,POMDP};
-                                  utility::Vector{Float64}=Array(Float64,0),
+                                  utility::Vector{Float64}=Array{Float64}(0),
                                   include_Q::Bool=true)
         ns = n_states(mdp)
         na = n_actions(mdp)
