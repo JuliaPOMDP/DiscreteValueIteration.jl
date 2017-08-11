@@ -186,13 +186,13 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     policy
 end
 
-function action{S}(policy::ValueIterationPolicy, s::S)
+function action(policy::ValueIterationPolicy, s::S) where S
     sidx = state_index(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
 
-function value{S}(policy::ValueIterationPolicy, s::S)
+function value(policy::ValueIterationPolicy, s::S) where S
     sidx = state_index(policy.mdp, s)
     policy.util[sidx]
 end
