@@ -157,13 +157,11 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
                     iaction = action_index(mdp, a)
                     dist = transition(mdp, s, a) # creates distribution over neighbors
                     u = 0.0
-                    for sp in iterator(dist)
-                        p = pdf(dist, sp)
+                    for (sp, p) in weighted_iterator(dist)
                         p == 0.0 ? continue : nothing # skip if zero prob
                         r = reward(mdp, s, a, sp)
                         isp = state_index(mdp, sp)
                         u += p * (r + discount_factor * util[isp])
-
                     end
                     new_util = u
                     if new_util > max_util
