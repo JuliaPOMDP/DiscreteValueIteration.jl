@@ -178,7 +178,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
         end # state
         iter_time = toq()
         total_time += iter_time
-        verbose ? println("Iteration : $i, residual: $residual, iteration run-time: $iter_time, total run-time: $total_time") : nothing
+        verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual, iter_time*1000.0, total_time) : nothing
         residual < belres ? break : nothing
     end # main
     policy
