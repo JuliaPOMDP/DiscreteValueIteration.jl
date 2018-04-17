@@ -53,13 +53,11 @@ using DiscreteValueIteration
 
 mdp = MyMDP() # initializes the MDP
 solver = ValueIterationSolver(max_iterations=100, belres=1e-6) # initializes the Solver type
-policy = ValueIterationPolicy(mdp) # initializes the policy type
-solve(solver, mdp, policy, verbose=true) # runs value iterations
+solve(solver, mdp) # runs value iterations
 ```
 
 To extract the policy for a given state, simply call the action function:
 
 ```julia
-s = create_state(mdp) # this can be any valid state
 a = action(polciy, s) # returns the optimal action for state s
 ```
