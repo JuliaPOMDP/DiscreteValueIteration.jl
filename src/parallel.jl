@@ -68,7 +68,6 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     q_mat  = SharedArray{Float64, 2}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     pol = SharedArray{Int64, 1}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    println(residual)
     workers = WorkerPool(collect(1:n_procs))
     
     iter_time  = 0.0
@@ -91,7 +90,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         iter_time = toq();
         total_time += iter_time
         verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual[1], iter_time*1000.0, total_time) : nothing
-        residual < solver.belres ? break : nothing
+        residual[1] < solver.belres ? break : nothing
     end # main iteration loop
     return ParallelValueIterationPolicy(q_mat, util, pol, actions(mdp), solver.include_Q, mdp)
 end
