@@ -5,12 +5,15 @@ module DiscreteValueIteration
 
 using POMDPs
 using POMDPToolbox
+using Parameters
 
 import POMDPs: Solver, solve, Policy, action, value 
 
 export
     ValueIterationPolicy,
     ValueIterationSolver,
+    ParallelValueIterationSolver,
+    ParallelValueIterationPolicy,
     create_policy,
     solve,
     action,
@@ -18,6 +21,7 @@ export
     locals
 
 include("vanilla.jl")
+include("parallel.jl")
 include("docs.jl")
 
 end # module
