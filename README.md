@@ -61,3 +61,6 @@ To extract the policy for a given state, simply call the action function:
 ```julia
 a = action(polciy, s) # returns the optimal action for state s
 ```
+
+## Parallel Value Iteration 
+
