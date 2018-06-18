@@ -1,7 +1,7 @@
 addprocs(2)
 @everywhere using POMDPs, POMDPModels
 @everywhere using DiscreteValueIteration
-mdp = GridWorld(sx=500, sy=500)
+mdp = GridWorld(sx=1000, sy=1000)
 
 solver = ParallelValueIterationSolver(n_procs=3)
 

@@ -62,20 +62,23 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
 
     # state chunks split between each worker
     chunks = chunk_ordering(n_procs, order)
+    
+    # create an ordered list of states for fast iteration
+    states_ = ordered_states(mdp)
 
     # shared utility function and Q-matrix
     util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     q_mat  = SharedArray{Float64, 2}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     pol = SharedArray{Int64, 1}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    println(residual)
+    S = state_type(mdp)
+    states = SharedArray{S, 1}(ns, pids=1:n_procs)
+    states[:] = states_[:]
     workers = WorkerPool(collect(1:n_procs))
     
     iter_time  = 0.0
     total_time = 0.0
 
-    # create an ordered list of states for fast iteration
-    states = ordered_states(mdp)
 
     for i = 1:max_iterations
         # old_util = deepcopy(Float64[util...]) # find a nicer way to check residual save old utility in main only 
@@ -91,7 +94,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         iter_time = toq();
         total_time += iter_time
         verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual[1], iter_time*1000.0, total_time) : nothing
-        residual < solver.belres ? break : nothing
+        residual[1] < solver.belres ? break : nothing
     end # main iteration loop
     return ParallelValueIterationPolicy(q_mat, util, pol, actions(mdp), solver.include_Q, mdp)
 end
@@ -100,7 +103,7 @@ end
 
 # updates shared utility and Q-Matrix for gauss-sidel value iteration
 function solve_chunk{S}(mdp::Union{MDP, POMDP}, 
-                        states::Vector{S}, 
+                        states::SharedArray{S, 1}, 
                         util::SharedArray{Float64, 1}, 
                         pol::SharedArray{Int64, 1}, 
                         qmat::SharedArray{Float64, 2}, 
