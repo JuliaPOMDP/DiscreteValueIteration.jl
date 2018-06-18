@@ -71,12 +71,9 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     q_mat  = SharedArray{Float64, 2}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     pol = SharedArray{Int64, 1}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-<<<<<<< HEAD
     S = state_type(mdp)
     states = SharedArray{S, 1}(ns, pids=1:n_procs)
     states[:] = states_[:]
-=======
->>>>>>> a76f0dfbac8b50622e77ec3685850e37788a3f4e
     workers = WorkerPool(collect(1:n_procs))
     
     iter_time  = 0.0
