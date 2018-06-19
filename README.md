@@ -64,3 +64,22 @@ a = action(polciy, s) # returns the optimal action for state s
 
 ## Parallel Value Iteration 
 
+Value iteration can be speeded up significantly by computing the value asynchronously in parallel. This package provides an parallel implementation of the Gauss-Seidel Value Iteration algorithm. 
+
+To enable using several CPUs with julia there are two options: 
+- Start julia with `julia -p 8` (to use 8 procs)
+- write `addprocs(7)` in your script (to add 7 procs in addition to the main, 8 procs available in total)
+
+Here is an example of `ParallelValueIterationSolver` applied to a large GridWorld problem:
+```julia
+addprocs(7) # or start julia with julia -p 8
+@everywhere using POMDPs, POMDPModels # do not forget 
+@everywhere using DiscreteValueIteration
+mdp = GridWorld(sx=1000, sy=1000)
+
+solver = ParallelValueIterationSolver(n_procs=3)
+
+parallel_policy = solve(solver, mdp)
+```
+
+To learn more about parallel computing with Julia, visit [this page](https://docs.julialang.org/en/v0.6.0/manual/parallel-computing/).

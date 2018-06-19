@@ -1,3 +1,15 @@
+"""
+    ParallelValueIterationSolver
+
+Parallel asynchronous (Gauss-Seidel) Value Iteration solver. It allows to benefits from multiple CPUs to speed up Value Iteration.
+# Fields:
+- `max_iterations::Int64`: number of iterations to run VI, default=100
+- `belres::Float64`: stop when the Bellman residual is lower than this value, default=1e-3
+- `n_procs::Int64`: number of processes to use, default=`Sys.CPU_CORES` (maximum available on the machine)
+- `include_Q::Bool`: if set to true, returns the state action values as well, default=true
+- `state_order::Vector{Tuple{Int64, Int64}}`: provide a decomposition of the state space to treat serially. 
+Each element of state_order is the start and end index of a chunk of states in the state space. Each chunk is solved in parallel.
+"""
 @with_kw mutable struct ParallelValueIterationSolver <: Solver
     max_iterations::Int64 = 100 # max number of iterations 
     belres::Float64 = 1e-3 # the Bellman Residual
@@ -6,6 +18,10 @@
     state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[] # contains chunks of state indices to process serially, each element is the start and end idx of a chunk
 end
 
+"""
+    ParallelValueIterationPolicy
+contains the output of the ParallelValueIterationSolver. 
+"""
 mutable struct ParallelValueIterationPolicy <: Policy
     qmat::Array{Float64, 2}
     util::Vector{Float64}
@@ -26,7 +42,6 @@ function ParallelValueIterationPolicy(mdp::Union{MDP,POMDP};
     return ParallelValueIterationPolicy(qmat, util, policy, action_map, include_Q, mdp)
 end
  
-
 # returns the utility function and the Q-matrix
 function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}; verbose::Bool=false)
     n_procs   = solver.n_procs
@@ -64,7 +79,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     chunks = chunk_ordering(n_procs, order)
     
     # create an ordered list of states for fast iteration
-    states_ = ordered_states(mdp)
+    # states_ = ordered_states(mdp)
 
     # shared utility function and Q-matrix
     util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
@@ -73,7 +88,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     S = state_type(mdp)
     states = SharedArray{S, 1}(ns, pids=1:n_procs)
-    states[:] = states_[:]
+    states[:] = states_[:] #XXX find a nicer way to initialize the shared array
     workers = WorkerPool(collect(1:n_procs))
     
     iter_time  = 0.0
@@ -87,7 +102,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         for c = 1:n_chunks
             state_indices = chunks[c]
             results = pmap(workers, 
-                           x -> solve_chunk(mdp, states, util, pol, q_mat, solver.include_Q, residual, x), 
+                           x -> solve_chunk(mdp,states, util, pol, q_mat, solver.include_Q, residual, x), 
                            state_indices)
         end # chunk loop 
 
@@ -101,7 +116,7 @@ end
 
 
 
-# updates shared utility and Q-Matrix for gauss-sidel value iteration
+# updates shared utility and Q-Matrix for gauss-seidel value iteration
 function solve_chunk{S}(mdp::Union{MDP, POMDP}, 
                         states::SharedArray{S, 1}, 
                         util::SharedArray{Float64, 1}, 
