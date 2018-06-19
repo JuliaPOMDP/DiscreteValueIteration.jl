@@ -79,7 +79,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     chunks = chunk_ordering(n_procs, order)
     
     # create an ordered list of states for fast iteration
-    # states_ = ordered_states(mdp)
+    states_ = ordered_states(mdp)
 
     # shared utility function and Q-matrix
     util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
@@ -131,7 +131,13 @@ function solve_chunk{S}(mdp::Union{MDP, POMDP},
     for istate=state_indices[1]:state_indices[2]
         s = states[istate]
         sub_aspace = actions(mdp, s)
-        if isterminal(mdp, s)
+        if isterminal(mdp, s) && !(s.crash)
+            old_util = util[istate]
+            util[istate] = 1.0
+            pol[istate] = 1
+            diff = abs(util[istate] - old_util)
+            diff > residual[1] ? (residual[1] = diff) : nothing
+        elseif isterminal(mdp, s)
             util[istate] = 0.0
             pol[istate] = 1
         else
