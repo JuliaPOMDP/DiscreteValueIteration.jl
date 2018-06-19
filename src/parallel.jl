@@ -43,7 +43,9 @@ function ParallelValueIterationPolicy(mdp::Union{MDP,POMDP};
 end
  
 # returns the utility function and the Q-matrix
-function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}; verbose::Bool=false)
+function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
+               policy::ParallelValueIterationPolicy=ParallelValueIterationPolicy(mdp, include_Q=true);
+               verbose::Bool=false)
     n_procs   = solver.n_procs
     
     # processor restriction checks
@@ -57,11 +59,14 @@ function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}; verb
         solver.state_order = [(1,ns)]
     end
     verbose ? println("Starting parallel Gauss Seidel Value Iteration with $n_procs cores") : nothing
-    gauss_seidel(solver, mdp, verbose=verbose)
+    verbose ? flush(STDOUT) : nothing
+    gauss_seidel(solver, mdp, policy, verbose=verbose)
 end
 
 
-function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMDP}; verbose::Bool=false) 
+function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMDP},
+                      policy::ParallelValueIterationPolicy=ParallelValueIterationPolicy(mdp, include_Q=true);
+                      verbose::Bool=false)
     # gauss-seidel does not check tolerance
     # always runs for max iterations
 
@@ -80,6 +85,8 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     
     # create an ordered list of states for fast iteration
     states_ = ordered_states(mdp)
+    verbose ? println("done ordering states") : nothing
+    verbose ? flush(STDOUT) : nothing
 
     # shared utility function and Q-matrix
     util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
@@ -88,7 +95,12 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     S = state_type(mdp)
     states = SharedArray{S, 1}(ns, pids=1:n_procs)
+
+    # init
     states[:] = states_[:] #XXX find a nicer way to initialize the shared array
+    util[:] = policy.util[:]
+    q_mat[:] = policy.qmat[:]
+    pol[:] = policy.policy[:]
     workers = WorkerPool(collect(1:n_procs))
     
     iter_time  = 0.0
@@ -109,6 +121,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         iter_time = toq();
         total_time += iter_time
         verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual[1], iter_time*1000.0, total_time) : nothing
+        verbose ? flush(STDOUT) : nothing
         residual[1] < solver.belres ? break : nothing
     end # main iteration loop
     return ParallelValueIterationPolicy(q_mat, util, pol, actions(mdp), solver.include_Q, mdp)
