@@ -131,13 +131,7 @@ function solve_chunk{S}(mdp::Union{MDP, POMDP},
     for istate=state_indices[1]:state_indices[2]
         s = states[istate]
         sub_aspace = actions(mdp, s)
-        if isterminal(mdp, s) && !(s.crash)
-            old_util = util[istate]
-            util[istate] = 1.0
-            pol[istate] = 1
-            diff = abs(util[istate] - old_util)
-            diff > residual[1] ? (residual[1] = diff) : nothing
-        elseif isterminal(mdp, s)
+        if isterminal(mdp, s)
             util[istate] = 0.0
             pol[istate] = 1
         else
