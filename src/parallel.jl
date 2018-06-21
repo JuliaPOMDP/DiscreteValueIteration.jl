@@ -26,12 +26,6 @@ function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
     return ParallelValueIterationSolver(max_iterations, belres, n_procs, include_Q, state_order)
 end
 
-function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
-                                       belres::Float64 = 1e-3,
-                                       n_procs::Int64 = Sys.CPU_CORES,
-                                       include_Q::Bool = true,
-                                       state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[])
-
 function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
                policy::ValueIterationPolicy=ValueIterationPolicy(mdp, include_Q=true);
                verbose::Bool=false)
