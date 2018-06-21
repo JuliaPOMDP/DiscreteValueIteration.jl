@@ -64,5 +64,3 @@ function test_conditioning_actions_on_state()
 end
 
 @test test_conditioning_actions_on_state() == true
-
-println("Finished tests")

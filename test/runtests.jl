@@ -11,3 +11,4 @@ include("runtests_parallel.jl") # test against the serial VI on GridWorld from P
 
 println("Testing Requirements")
 @requirements_info ValueIterationSolver() GridWorld()
+@requirements_info ParallelValueIterationSolver() GridWorld()
