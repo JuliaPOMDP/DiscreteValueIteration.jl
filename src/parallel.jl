@@ -5,18 +5,24 @@ Parallel asynchronous (Gauss-Seidel) Value Iteration solver. It allows to benefi
 # Fields:
 - `max_iterations::Int64`: number of iterations to run VI, default=100
 - `belres::Float64`: stop when the Bellman residual is lower than this value, default=1e-3
-- `n_procs::Int64`: number of processes to use, default=`Sys.CPU_CORES` (maximum available on the machine)
+- `n_procs::Int64`: number of processors to use, default=`Sys.CPU_CORES` (maximum available on the machine)
 - `include_Q::Bool`: if set to true, returns the state action values as well, default=true
 - `state_order::Vector{Tuple{Int64, Int64}}`: provide a decomposition of the state space to treat serially. 
 Each element of state_order is the start and end index of a chunk of states in the state space. Each chunk is solved in parallel.
 """
-@with_kw mutable struct ParallelValueIterationSolver <: Solver
-    max_iterations::Int64 = 100 # max number of iterations 
-    belres::Float64 = 1e-3 # the Bellman Residual
-    n_procs::Int64 = Sys.CPU_CORES# number of processors to use
-    include_Q::Bool = true
-    state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[] # contains chunks of state indices to process serially, each element is the start and end idx of a chunk
+mutable struct ParallelValueIterationSolver <: Solver
+    max_iterations::Int64 
+    belres::Float64 
+    n_procs::Int64 
+    include_Q::Bool
+    state_order::Vector{Tuple{Int64, Int64}}
 end
+
+function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
+                                       belres::Float64 = 1e-3,
+                                       n_procs::Int64 = Sys.CPU_CORES,
+                                       include_Q::Bool = true,
+                                       state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[])
 
 function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
                policy::ValueIterationPolicy=ValueIterationPolicy(mdp, include_Q=true);

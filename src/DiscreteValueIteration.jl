@@ -5,7 +5,6 @@ module DiscreteValueIteration
 
 using POMDPs
 using POMDPToolbox
-using Parameters
 
 import POMDPs: Solver, solve, Policy, action, value 
 import Base: localindexes
