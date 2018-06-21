@@ -16,7 +16,6 @@ mutable struct ParallelValueIterationSolver <: Solver
     n_procs::Int64 
     include_Q::Bool
     state_order::Vector{Tuple{Int64, Int64}}
-<<<<<<< HEAD
 end
 
 function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
@@ -25,8 +24,6 @@ function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
                                        include_Q::Bool = true,
                                        state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[])
     return ParallelValueIterationSolver(max_iterations, belres, n_procs, include_Q, state_order)
-=======
->>>>>>> 14fe430793a6167b3078280208d1868c23a661eb
 end
 
 function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
