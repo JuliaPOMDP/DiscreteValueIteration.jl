@@ -13,7 +13,6 @@ export
     ValueIterationPolicy,
     ValueIterationSolver,
     ParallelValueIterationSolver,
-    ParallelValueIterationPolicy,
     create_policy,
     solve,
     action,

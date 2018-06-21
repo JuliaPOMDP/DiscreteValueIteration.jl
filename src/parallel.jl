@@ -18,37 +18,14 @@ Each element of state_order is the start and end index of a chunk of states in t
     state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[] # contains chunks of state indices to process serially, each element is the start and end idx of a chunk
 end
 
-"""
-    ParallelValueIterationPolicy
-contains the output of the ParallelValueIterationSolver. 
-"""
-mutable struct ParallelValueIterationPolicy <: Policy
-    qmat::Array{Float64, 2}
-    util::Vector{Float64}
-    policy::Vector{Int64}
-    action_map::AbstractVector
-    include_Q::Bool
-    mdp::Union{MDP, POMDP}
-end
-
-function ParallelValueIterationPolicy(mdp::Union{MDP,POMDP};
-                                      include_Q::Bool=true)
-    ns = n_states(mdp)
-    na = n_actions(mdp)
-    qmat = include_Q ? zeros(ns, na) : zeros(0., 0.)
-    util = zeros(ns)
-    policy = zeros(Int64, ns)
-    action_map = ordered_actions(mdp)
-    return ParallelValueIterationPolicy(qmat, util, policy, action_map, include_Q, mdp)
-end
- 
-# returns the utility function and the Q-matrix
 function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
-               policy::ParallelValueIterationPolicy=ParallelValueIterationPolicy(mdp, include_Q=true);
+               policy::ValueIterationPolicy=ValueIterationPolicy(mdp, include_Q=true);
                verbose::Bool=false)
+
+    @warn_requirements solve(solver, mdp)
+        
+    # processor restriction checks    
     n_procs   = solver.n_procs
-    
-    # processor restriction checks
     n_procs < 2 ? error("Less than 2 processors not allowed") : nothing
     n_procs > Sys.CPU_CORES ? error("Requested too many processors") : nothing
    
@@ -63,9 +40,8 @@ function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
     gauss_seidel(solver, mdp, policy, verbose=verbose)
 end
 
-
 function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMDP},
-                      policy::ParallelValueIterationPolicy=ParallelValueIterationPolicy(mdp, include_Q=true);
+                      policy::ValueIterationPolicy;
                       verbose::Bool=false)
     # gauss-seidel does not check tolerance
     # always runs for max iterations
@@ -84,37 +60,36 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     chunks = chunk_ordering(n_procs, order)
     
     # create an ordered list of states for fast iteration
+    verbose ? println("ordering states ...") : nothing
     states_ = ordered_states(mdp)
     verbose ? println("done ordering states") : nothing
     verbose ? flush(STDOUT) : nothing
 
     # shared utility function and Q-matrix
     util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    q_mat  = SharedArray{Float64, 2}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    pol = SharedArray{Int64, 1}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    residual = SharedArray{Float64, 1}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
+    q_mat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
+    pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
+    residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     S = state_type(mdp)
-    states = SharedArray{S, 1}(ns, pids=1:n_procs)
-
+    states = SharedArray{S}(ns, pids=1:n_procs)
+    workers = WorkerPool(collect(1:n_procs))
+    
     # init
     states[:] = states_[:] #XXX find a nicer way to initialize the shared array
     util[:] = policy.util[:]
     q_mat[:] = policy.qmat[:]
     pol[:] = policy.policy[:]
-    workers = WorkerPool(collect(1:n_procs))
-    
+
     iter_time  = 0.0
     total_time = 0.0
 
-
     for i = 1:max_iterations
-        # old_util = deepcopy(Float64[util...]) # find a nicer way to check residual save old utility in main only 
         tic()
         residual[1] = 0.
         for c = 1:n_chunks
             state_indices = chunks[c]
             results = pmap(workers, 
-                           x -> solve_chunk(mdp,states, util, pol, q_mat, solver.include_Q, residual, x), 
+                           x -> solve_chunk(mdp, states, util, pol, q_mat, solver.include_Q, residual, x), 
                            state_indices)
         end # chunk loop 
 
@@ -124,23 +99,21 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         verbose ? flush(STDOUT) : nothing
         residual[1] < solver.belres ? break : nothing
     end # main iteration loop
-    return ParallelValueIterationPolicy(q_mat, util, pol, actions(mdp), solver.include_Q, mdp)
+    return ValueIterationPolicy(mdp, q_mat, util, pol)
 end
 
-
-
-# updates shared utility and Q-Matrix for gauss-seidel value iteration
-function solve_chunk{S}(mdp::Union{MDP, POMDP}, 
-                        states::SharedArray{S, 1}, 
-                        util::SharedArray{Float64, 1}, 
-                        pol::SharedArray{Int64, 1}, 
-                        qmat::SharedArray{Float64, 2}, 
-                        include_Q::Bool,
-                        residual::SharedArray{Float64, 1},
-                        state_indices::Tuple{Int64, Int64})
+# updates shared utility and Q-Matrix using gauss-seidel value iteration (asynchronous)
+function solve_chunk(mdp::M, 
+                    states::SharedArray{S, 1}, 
+                    util::SharedArray{Float64, 1}, 
+                    pol::SharedArray{Int64, 1}, 
+                    qmat::SharedArray{Float64, 2}, 
+                    include_Q::Bool,
+                    residual::SharedArray{Float64, 1},
+                    state_indices::Tuple{Int64, Int64}
+                    ) where {M <: Union{MDP, POMDP}, S}
 
     discount_factor = discount(mdp)
-   
     for istate=state_indices[1]:state_indices[2]
         s = states[istate]
         sub_aspace = actions(mdp, s)
@@ -176,7 +149,6 @@ function solve_chunk{S}(mdp::Union{MDP, POMDP},
     return 
 end
 
-
 # returns an array of start and end indices for each chunk
 function chunk_ordering(n_procs::Int64, order::Vector{Tuple{Int64, Int64}})
     n_chunks = length(order)
@@ -203,3 +175,7 @@ function chunk_ordering(n_procs::Int64, order::Vector{Tuple{Int64, Int64}})
     return chunks
 end
 
+@POMDP_require solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}) begin
+    vi_solver = ValueIterationSolver(solver.max_iterations, solver.belres)
+    @subreq solve(vi_solver, mdp)
+end

@@ -114,17 +114,15 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true)
 #####################################################################
-using ProgressMeter
 function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=create_policy(solver, mdp); verbose::Bool=false)
-    # println("Hello!")
-    # @warn_requirements solve(solver, mdp)
-    # println("Passed requirements")
+
+    @warn_requirements solve(solver, mdp)
 
     # solver parameters
     max_iterations = solver.max_iterations
     belres = solver.belres
     discount_factor = discount(mdp)
-    println("initializing utility and Q matrix")
+
     # intialize the utility and Q-matrix
     util = policy.util
     qmat = policy.qmat
@@ -138,16 +136,13 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}, policy=creat
     iter_time = 0.0
 
     # create an ordered list of states for fast iteration
-    println("ordering states ...")
-    @time states = ordered_states(mdp)
-    println("done ordering states")
+    states = ordered_states(mdp)
 
     # main loop
     for i = 1:max_iterations
         residual = 0.0
         tic()
         # state loop
-        # println("starting iteration $i")
         for (istate,s) in enumerate(states)
             sub_aspace = actions(mdp, s)
             if isterminal(mdp, s)
