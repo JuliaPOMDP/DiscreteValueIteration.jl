@@ -43,11 +43,6 @@ end
 function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMDP},
                       policy::ValueIterationPolicy;
                       verbose::Bool=false)
-    # gauss-seidel does not check tolerance
-    # always runs for max iterations
-
-    ns = n_states(mdp)
-    na = n_actions(mdp)
 
     max_iterations = solver.max_iterations
     n_procs  = solver.n_procs
@@ -65,20 +60,16 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     verbose ? println("done ordering states") : nothing
     verbose ? flush(STDOUT) : nothing
 
-    # shared utility function and Q-matrix
-    util = SharedArray{Float64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    q_mat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
+    # init shared utility function and Q-matrix    
+    ns = n_states(mdp)
+    na = n_actions(mdp)
+    util = SharedArray{Float64}(ns, init = S -> S[localindexes(S)] = policy.util[localindexes(S)], pids=1:n_procs)
+    qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = policy.qmat[localindexes(S)], pids=1:n_procs)
+    pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = policy.policy[localindexes(S)], pids=1:n_procs)
     residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     S = state_type(mdp)
-    states = SharedArray{S}(ns, pids=1:n_procs)
+    states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
     workers = WorkerPool(collect(1:n_procs))
-    
-    # init
-    states[:] = states_[:] #XXX find a nicer way to initialize the shared array
-    util[:] = policy.util[:]
-    q_mat[:] = policy.qmat[:]
-    pol[:] = policy.policy[:]
 
     iter_time  = 0.0
     total_time = 0.0
@@ -89,7 +80,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         for c = 1:n_chunks
             state_indices = chunks[c]
             results = pmap(workers, 
-                           x -> solve_chunk(mdp, states, util, pol, q_mat, solver.include_Q, residual, x), 
+                           x -> solve_chunk(mdp, states, util, pol, qmat, solver.include_Q, residual, x), 
                            state_indices)
         end # chunk loop 
 
@@ -99,7 +90,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         verbose ? flush(STDOUT) : nothing
         residual[1] < solver.belres ? break : nothing
     end # main iteration loop
-    return ValueIterationPolicy(mdp, q_mat, util, pol)
+    return ValueIterationPolicy(mdp, convert(Array{Float64, 2}, qmat), convert(Array{Float64, 1} , util), convert(Array{Int64, 1}, pol))
 end
 
 # updates shared utility and Q-Matrix using gauss-seidel value iteration (asynchronous)
