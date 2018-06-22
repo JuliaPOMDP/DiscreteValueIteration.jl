@@ -64,7 +64,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     
     # create an ordered list of states for fast iteration
     verbose ? println("ordering states ...") : nothing
-    states_ = ordered_states(mdp)
+    states = ordered_states(mdp)
     verbose ? println("done ordering states") : nothing
     verbose ? flush(STDOUT) : nothing
 
@@ -72,11 +72,12 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     ns = n_states(mdp)
     na = n_actions(mdp)
     util = SharedArray{Float64}(ns, init = S -> S[localindexes(S)] = policy.util[localindexes(S)], pids=1:n_procs)
-    qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = policy.qmat[localindexes(S)], pids=1:n_procs)
+    include_Q = policy.include_Q
+    include_Q ? qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = policy.qmat[localindexes(S)], pids=1:n_procs) : nothing
     pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = policy.policy[localindexes(S)], pids=1:n_procs)
     residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
     S = state_type(mdp)
-    states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
+    # states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
     workers = WorkerPool(collect(1:n_procs))
 
     iter_time  = 0.0
@@ -86,10 +87,40 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         tic()
         residual[1] = 0.
         for c = 1:n_chunks
-            state_indices = chunks[c]
-            results = pmap(workers, 
-                           x -> solve_chunk(mdp, states, util, pol, qmat, solver.include_Q, residual, x), 
-                           state_indices)
+            # state_indices = chunks[c]
+            discount_factor = discount(mdp)
+            @parallel for istate=1:ns
+                s = states[istate]
+                sub_aspace = actions(mdp, s)
+                if isterminal(mdp, s)
+                    util[istate] = 0.0
+                    pol[istate] = 1
+                else
+                    old_util = util[istate] # for residual
+                    max_util = -Inf
+                    for a in iterator(sub_aspace)
+                        iaction = action_index(mdp, a)
+                        dist = transition(mdp, s, a) # creates distribution over neighbors
+                        u = 0.0
+                        for (sp, p) in weighted_iterator(dist)
+                            p == 0.0 ? continue : nothing # skip if zero prob
+                            r = reward(mdp, s, a, sp)
+                            isp = state_index(mdp, sp)
+                            u += p * (r + discount_factor * util[isp])
+                        end
+                        new_util = u
+                        if new_util > max_util
+                            max_util = new_util
+                            pol[istate] = iaction
+                        end
+                        include_Q ? (qmat[istate, iaction] = new_util) : nothing
+                    end # action
+                    util[istate] = max_util
+                    diff = abs(max_util - old_util)
+                    diff > residual[1] ? (residual[1] = diff) : nothing
+                    # update the value array
+                end
+            end # state loop
         end # chunk loop 
 
         iter_time = toq();
@@ -103,7 +134,7 @@ end
 
 # updates shared utility and Q-Matrix using gauss-seidel value iteration (asynchronous)
 function solve_chunk(mdp::M, 
-                    states::SharedArray{S, 1}, 
+                    states::Array{S, 1}, 
                     util::SharedArray{Float64, 1}, 
                     pol::SharedArray{Int64, 1}, 
                     qmat::SharedArray{Float64, 2}, 
