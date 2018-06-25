@@ -89,7 +89,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         for c = 1:n_chunks
             # state_indices = chunks[c]
             discount_factor = discount(mdp)
-            @parallel for istate=1:ns
+            @parallel @sync for istate=1:ns
                 s = states[istate]
                 sub_aspace = actions(mdp, s)
                 if isterminal(mdp, s)
