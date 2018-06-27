@@ -17,7 +17,8 @@ export
     solve,
     action,
     value,
-    locals
+    locals, 
+    ind2state
 
 include("vanilla.jl")
 include("parallel.jl")
