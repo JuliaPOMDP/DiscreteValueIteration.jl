@@ -86,3 +86,4 @@ end
 @test test_complex_gridworld() == true
 @test test_simple_grid() == true
 @test test_init_solution() == true
+@test test_not_include_Q() == true
