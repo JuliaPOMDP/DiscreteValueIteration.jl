@@ -3,6 +3,9 @@ The solver type. Contains two parameters that are keyworded in the constructor:
 
     - max_iterations::Int64, the maximum number of iterations value iteration runs for (default 100)
     - belres::Float64, the Bellman residual (default 1e-3)
+    - verbose::Bool, if set to true, the bellman residual and the time per iteration will be printed to STDOUT (default false)
+    - include_Q::Bool, if set to true, the solver outputs the Q values in addition to the utility and the policy (default true)
+    - init_util::Vector{Float64}, provides a custom initialization of the utility vector. (initializes utility to 0 by default)
 
 The solver can be initialized by running:
     `solver = ValueIterationSolver(max_iterations=1000, belres=1e-6)`

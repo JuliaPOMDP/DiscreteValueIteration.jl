@@ -4,13 +4,15 @@ mutable struct ValueIterationSolver <: Solver
     belres::Float64 # the Bellman Residual
     verbose::Bool 
     include_Q::Bool
+    init_util::Vector{Float64}
 end
 # Default constructor
 function ValueIterationSolver(;max_iterations::Int64 = 100, 
                                belres::Float64 = 1e-3,
                                verbose::Bool = false,
-                               include_Q::Bool = true)
-    return ValueIterationSolver(max_iterations, belres, verbose, include_Q)
+                               include_Q::Bool = true,
+                               init_util::Vector{Float64}=Vector{Float64}(0))    
+    return ValueIterationSolver(max_iterations, belres, verbose, include_Q, init_util)
 end
 
 # The policy type
@@ -25,7 +27,8 @@ end
 
 # constructor with an optinal initial value function argument
 function ValueIterationPolicy(mdp::Union{MDP,POMDP};
-                              utility::Vector{Float64}=Array{Float64}(0),
+                              utility::Vector{Float64}=Vector{Float64}(0),
+                              policy::Vector{Int64}=Vector{Int64}(0),
                               include_Q::Bool=true)
     ns = n_states(mdp)
     na = n_actions(mdp)
@@ -36,9 +39,14 @@ function ValueIterationPolicy(mdp::Union{MDP,POMDP};
         util = zeros(ns)
     end
     action_map = ordered_actions(mdp)
-    policy = zeros(Int64,ns)
+    if !isempty(policy)
+        @assert first(size(utility)) == ns "Input utility dimension mismatch"
+        pol = policy
+    else
+        pol = zeros(Int64,ns)
+    end
     include_Q ? qmat = zeros(ns,na) : qmat = zeros(0,0)
-    return ValueIterationPolicy(qmat, util, policy, action_map, include_Q, mdp)
+    return ValueIterationPolicy(qmat, util, pol, action_map, include_Q, mdp)
 end
 
 # constructor for solved q, util and policy
@@ -112,16 +120,21 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP})
     max_iterations = solver.max_iterations
     belres = solver.belres
     discount_factor = discount(mdp)
+    ns = n_states(mdp)
+    na = n_actions(mdp)
 
     # intialize the utility and Q-matrix
-    policy = ValueIterationPolicy(mdp)
-    util = policy.util
-    qmat = policy.qmat
+    if !isempty(solver.init_util)
+        @assert length(solver.init_util) == ns "Input utility dimension mismatch"
+        util = solver.init_util
+    else
+        util = zeros(ns)
+    end
     include_Q = solver.include_Q
     if include_Q
-        qmat[:] = 0.0
+        qmat = zeros(ns, na)
     end
-    pol = policy.policy
+    pol = zeros(Int64, ns)
 
     total_time = 0.0
     iter_time = 0.0
@@ -172,7 +185,11 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP})
         solver.verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual, iter_time*1000.0, total_time) : nothing
         residual < belres ? break : nothing
     end # main
-    policy
+    if include_Q
+        return ValueIterationPolicy(mdp, qmat, util, pol)
+    else
+        return ValueIterationPolicy(mdp, utility=util, policy=pol, include_Q=false)
+    end
 end
 
 function action(policy::ValueIterationPolicy, s::S) where S
