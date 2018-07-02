@@ -25,12 +25,6 @@ ValueIterationPolicy
 
 
 """
-Returns an empty policy
-"""
-create_policy
-
-
-"""
 Computes the optimal policy for an MDP. The function takes a verbose flag which can dump text output onto the screen.
 You can run the function:
     `policy = solve(solver, mdp, verbose=true)`

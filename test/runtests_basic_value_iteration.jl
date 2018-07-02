@@ -1,9 +1,8 @@
 
 function support_serial_qtest(mdp::Union{MDP,POMDP}, file::AbstractString; niter::Int64=100, res::Float64=1e-3)
     qt = readdlm(file)
-    solver = ValueIterationSolver(max_iterations=niter, belres=res)
-    policy = create_policy(solver, mdp) 
-    policy = solve(solver, mdp, policy, verbose=true)
+    solver = ValueIterationSolver(max_iterations=niter, belres=res, verbose=true)
+    policy = solve(solver, mdp)
     (q, u, p, am) = locals(policy)
     npolicy = ValueIterationPolicy(mdp, deepcopy(q))
     nnpolicy = ValueIterationPolicy(mdp, deepcopy(q), deepcopy(u), deepcopy(p))
@@ -43,9 +42,8 @@ function test_simple_grid()
 	# 7 (0,0) is absorbing state
 	mdp = GridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0])
 	
-	solver = ValueIterationSolver()
-    policy = create_policy(solver, mdp) 
-    policy = solve(solver, mdp, policy, verbose=true)
+	solver = ValueIterationSolver(verbose=true)
+    policy = solve(solver, mdp)
 
 	# up: 1, down: 2, left: 3, right: 4
 	correct_policy = [1,1,1,1,4,1,1] # alternative policies

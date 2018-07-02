@@ -50,9 +50,8 @@ function test_conditioning_actions_on_state()
 	# 7 (0,0) is absorbing state
     mdp = SpecialGridWorld(GridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
 
-	solver = ValueIterationSolver()
-    policy = create_policy(solver, mdp)
-    policy = solve(solver, mdp, policy, verbose=true)
+	solver = ValueIterationSolver(verbose=true)
+    policy = solve(solver, mdp)
 
 	println(policy.policy)
 
