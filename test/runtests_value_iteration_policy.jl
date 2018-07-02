@@ -46,6 +46,19 @@ function test_creation_of_policy_given_q()
 	return (policy.mdp == mdp && policy.qmat == correct_qmat)
 end
 
+function test_creation_of_policy_given_policy()
+		# If we create a ValueIterationPolicy by providing a policy,
+	# does those values successfully get saved?
+	#
+	# GridWorld:
+	# |_________|_________|_________| plus a fake state for absorbing
+	mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+	correct_policy = [1,1,1,1]
+	policy = ValueIterationPolicy(mdp, policy=correct_policy)
+	return policy.policy == correct_policy
+end
+
 @test test_creation_of_policy_given_utilities() == true
 @test test_creation_of_policy_given_q_util_policy() == true
 @test test_creation_of_policy_given_q() == true
+@test test_creation_of_policy_given_policy() == true

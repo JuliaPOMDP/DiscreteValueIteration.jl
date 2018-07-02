@@ -67,6 +67,22 @@ function test_init_solution()
 	return isapprox(ut, policy.util, rtol=1e-5)
 end
 
+function test_not_include_Q()
+	# Load correct policy from file and verify we can reconstruct it
+	rstates = [GridWorldState(4,3), GridWorldState(4,6), GridWorldState(9,3), GridWorldState(8,8)]
+	rvals = [-10.0, -5.0, 10.0, 3.0]
+	xs = 10
+	ys = 10
+	mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
+	qt = readdlm("grid-world-10x10-Q-matrix.txt")
+	ut = maximum(qt, 2)[:]
+	niter = 100
+	res = 1e-3
+	solver = ValueIterationSolver(verbose=true, init_util=ut, belres=1e-3, include_Q=false)
+	policy = solve(solver, mdp)
+	return isapprox(ut, policy.util, rtol=1e-3)
+end
+
 @test test_complex_gridworld() == true
 @test test_simple_grid() == true
 @test test_init_solution() == true

@@ -33,14 +33,14 @@ function ValueIterationPolicy(mdp::Union{MDP,POMDP};
     ns = n_states(mdp)
     na = n_actions(mdp)
     if !isempty(utility)
-        @assert first(size(utility)) == ns "Input utility dimension mismatch"
+        @assert length(utility) == ns "Input utility dimension mismatch"
         util = utility
     else
         util = zeros(ns)
     end
     action_map = ordered_actions(mdp)
     if !isempty(policy)
-        @assert first(size(utility)) == ns "Input utility dimension mismatch"
+        @assert length(policy) == ns "Input policy dimension mismatch"
         pol = policy
     else
         pol = zeros(Int64,ns)
