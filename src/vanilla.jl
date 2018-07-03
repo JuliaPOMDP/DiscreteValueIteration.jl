@@ -27,26 +27,16 @@ end
 
 # constructor with an optinal initial value function argument
 function ValueIterationPolicy(mdp::Union{MDP,POMDP};
-                              utility::Vector{Float64}=Vector{Float64}(0),
-                              policy::Vector{Int64}=Vector{Int64}(0),
+                              utility::Vector{Float64}=zeros(n_states(mdp)),
+                              policy::Vector{Int64}=zeros(Int64, n_states(mdp)),
                               include_Q::Bool=true)
     ns = n_states(mdp)
     na = n_actions(mdp)
-    if !isempty(utility)
-        @assert length(utility) == ns "Input utility dimension mismatch"
-        util = utility
-    else
-        util = zeros(ns)
-    end
+    @assert length(utility) == ns "Input utility dimension mismatch"
+    @assert length(policy) == ns "Input policy dimension mismatch"
     action_map = ordered_actions(mdp)
-    if !isempty(policy)
-        @assert length(policy) == ns "Input policy dimension mismatch"
-        pol = policy
-    else
-        pol = zeros(Int64,ns)
-    end
     include_Q ? qmat = zeros(ns,na) : qmat = zeros(0,0)
-    return ValueIterationPolicy(qmat, util, pol, action_map, include_Q, mdp)
+    return ValueIterationPolicy(qmat, utility, policy, action_map, include_Q, mdp)
 end
 
 # constructor for solved q, util and policy
