@@ -102,8 +102,13 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true)
 #####################################################################
-function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP})
-
+function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
+    
+    # deprecation warning - can be removed when Julia 1.0 is adopted
+    if !isempty(kwargs)
+        warn("Keyword args for solve(::ValueIterationSolver, ::MDP) are no longer supported. For verbose output, use the verbose option in the ValueIterationSolver")
+    end
+    
     @warn_requirements solve(solver, mdp)
 
     # solver parameters
