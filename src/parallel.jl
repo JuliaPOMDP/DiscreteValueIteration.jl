@@ -33,7 +33,7 @@ function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP},
                policy::ValueIterationPolicy=ValueIterationPolicy(mdp, include_Q=true);
                verbose::Bool=false)
 
-    @warn_requirements solve(solver, mdp)
+    #@warn_requirements solve(solver, mdp)
         
     # processor restriction checks    
     n_procs   = solver.n_procs
@@ -81,7 +81,8 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     S = state_type(mdp)
     # states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
     workers = WorkerPool(collect(1:n_procs))
-
+    println("shared array initialized")
+    flush(STDOUT)
     iter_time  = 0.0
     total_time = 0.0
 
@@ -112,7 +113,7 @@ function solve_chunk(mdp::M,
                     include_Q::Bool,
                     residual::SharedArray{Float64, 1},
                     state_indices::Tuple{Int64, Int64}
-                    ) where {M <: Union{MDP, POMDP}, S}
+                    ) where {M <: Union{MDP, POMDP}}
 
     discount_factor = discount(mdp)
     for istate=state_indices[1]:state_indices[2]
