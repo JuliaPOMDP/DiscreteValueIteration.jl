@@ -12,8 +12,6 @@ import Base: localindexes
 export
     ValueIterationPolicy,
     ValueIterationSolver,
-    ParallelValueIterationSolver,
-    create_policy,
     solve,
     action,
     value,
