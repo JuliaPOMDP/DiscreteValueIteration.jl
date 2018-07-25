@@ -160,14 +160,14 @@ function chunk_ordering(n_procs::Int64, order::Vector{Tuple{Int64, Int64}})
         n_states_per_chunk = end_idx - start_idx
         # divide the work among the processors
         stride = div(n_states_per_chunk, (n_procs-1))
-        temp = Vector{Tuple{Int64, Int64}}()
+        temp = Vector{Tuple{Int64, Int64}}(n_procs-1)
         for j = 0:(n_procs-2)
             si = j * stride + start_idx
             ei = si + stride - 1
             if j == (n_procs-2) 
                 ei = end_idx
             end
-            push!(temp, (si ,ei))
+            temp[j+1] =  (si ,ei)
         end
         chunks[i] = temp
     end
