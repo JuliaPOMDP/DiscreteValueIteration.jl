@@ -1,5 +1,5 @@
 """
-    ParallelValueIterationSolver
+    ParallelValueIterationNotSharedSolver
 
 Parallel asynchronous (Gauss-Seidel) Value Iteration solver. It allows to benefits from multiple CPUs to speed up Value Iteration.
 # Fields:
@@ -10,7 +10,7 @@ Parallel asynchronous (Gauss-Seidel) Value Iteration solver. It allows to benefi
 - `state_order::Vector{Tuple{Int64, Int64}}`: provide a decomposition of the state space to treat serially. 
 Each element of state_order is the start and end index of a chunk of states in the state space. Each chunk is solved in parallel.
 """
-mutable struct ParallelValueIterationSolver <: Solver
+mutable struct ParallelValueIterationNotSharedSolver <: Solver
     max_iterations::Int64 
     belres::Float64 
     n_procs::Int64 
@@ -20,21 +20,21 @@ mutable struct ParallelValueIterationSolver <: Solver
     state_order::Vector{Tuple{Int64, Int64}}
 end
 
-function ParallelValueIterationSolver(;max_iterations::Int64 = 100,
+function ParallelValueIterationNotSharedSolver(;max_iterations::Int64 = 100,
                                        belres::Float64 = 1e-3,
                                        n_procs::Int64 = Sys.CPU_CORES,
                                        verbose::Bool = true,        
                                        include_Q::Bool = true,
                                        init_util::Vector{Float64}=Vector{Float64}(0),
                                        state_order::Vector{Tuple{Int64, Int64}} = Tuple{Int64, Int64}[])
-    return ParallelValueIterationSolver(max_iterations, belres, n_procs, verbose, include_Q, init_util, state_order)
+    return ParallelValueIterationNotSharedSolver(max_iterations, belres, n_procs, verbose, include_Q, init_util, state_order)
 end
 
-function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
+function solve(solver::ParallelValueIterationNotSharedSolver, mdp::Union{MDP,POMDP}; kwargs...)
 
     # deprecation warning - can be removed when Julia 1.0 is adopted
     if !isempty(kwargs)
-        warn("Keyword args for solve(::ParallelValueIterationSolver, ::MDP) are no longer supported. For verbose output, use the verbose option in the ValueIterationSolver")
+        warn("Keyword args for solve(::ParallelValueIterationNotSharedSolver, ::MDP) are no longer supported. For verbose output, use the verbose option in the ValueIterationSolver")
     end
 
     @warn_requirements solve(solver, mdp)
@@ -55,7 +55,7 @@ function solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}; kwar
     gauss_seidel(solver, mdp)
 end
 
-function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMDP})
+function gauss_seidel(solver::ParallelValueIterationNotSharedSolver, mdp::Union{MDP, POMDP})
 
     max_iterations = solver.max_iterations
     n_procs = solver.n_procs
@@ -70,11 +70,9 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     
     # create an ordered list of states for fast iteration
     verbose ? println("ordering states ...") : nothing
-    states_ = ordered_states(mdp)
+    states = ordered_states(mdp)
     verbose ? println("done ordering states") : nothing
     verbose ? flush(STDOUT) : nothing
-
-
 
     # init shared utility function and Q-matrix    
     ns = n_states(mdp)
@@ -97,8 +95,6 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=1:n_procs)
     pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=1:n_procs)
     residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
-    S = state_type(mdp)
-    states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
     workers = WorkerPool(collect(1:n_procs))
 
     iter_time  = 0.0
@@ -125,7 +121,7 @@ end
 
 # updates shared utility and Q-Matrix using gauss-seidel value iteration (asynchronous)
 function solve_chunk(mdp::M, 
-                    states::SharedArray{S, 1}, 
+                    states::Array{S, 1}, 
                     util::SharedArray{Float64, 1}, 
                     pol::SharedArray{Int64, 1}, 
                     qmat::SharedArray{Float64, 2}, 
@@ -196,7 +192,7 @@ function chunk_ordering(n_procs::Int64, order::Vector{Tuple{Int64, Int64}})
     return chunks
 end
 
-@POMDP_require solve(solver::ParallelValueIterationSolver, mdp::Union{MDP,POMDP}) begin
+@POMDP_require solve(solver::ParallelValueIterationNotSharedSolver, mdp::Union{MDP,POMDP}) begin
     vi_solver = ValueIterationSolver(max_iterations=solver.max_iterations, 
                                      belres=solver.belres,
                                      include_Q=solver.include_Q,

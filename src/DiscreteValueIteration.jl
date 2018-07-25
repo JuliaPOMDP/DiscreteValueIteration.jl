@@ -12,6 +12,8 @@ import Base: localindexes
 export
     ValueIterationPolicy,
     ValueIterationSolver,
+    ParallelValueIterationSolver,
+    ParallelValueIterationNotSharedSolver,
     solve,
     action,
     value,
@@ -19,6 +21,7 @@ export
 
 include("vanilla.jl")
 include("parallel.jl")
+include("parallel_not_shared.jl")
 include("docs.jl")
 
 end # module
