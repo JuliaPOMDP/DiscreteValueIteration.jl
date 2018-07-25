@@ -14,6 +14,7 @@ export
     ValueIterationSolver,
     ParallelValueIterationSolver,
     ParallelValueIterationNotSharedSolver,
+    ParallelValueIterationMacroSolver,
     solve,
     action,
     value,
@@ -22,6 +23,7 @@ export
 include("vanilla.jl")
 include("parallel.jl")
 include("parallel_not_shared.jl")
+include("parallel_@parallel.jl")
 include("docs.jl")
 
 end # module
