@@ -3,9 +3,9 @@ addprocs(2)
 
 mdp = GridWorld(sx=500, sy=500)
 
-solver = ParallelValueIterationSolver(n_procs=3)
+solver = ParallelValueIterationSolver(n_procs=3, verbose=true)
 
-parallel_policy = solve(solver, mdp, verbose=true)
+parallel_policy = solve(solver, mdp)
 
 serial_policy = solve(ValueIterationSolver(), mdp)
 
