@@ -71,10 +71,10 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     chunks = chunk_ordering(n_procs, order)
     
     # create an ordered list of states for fast iteration
-    # verbose ? println("ordering states ...") : nothing
-    # states_ = ordered_states(mdp)
-    # verbose ? println("done ordering states") : nothing
-    # verbose ? flush(STDOUT) : nothing
+    verbose ? println("ordering states ...") : nothing
+    states_ = ordered_states(mdp)
+    verbose ? println("done ordering states") : nothing
+    verbose ? flush(STDOUT) : nothing
 
 
 
@@ -95,12 +95,12 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     end
     init_pol = zeros(Int64, ns)
     
-    util = SharedArray{Float64}(ns, init = S -> S[localindexes(S)] = init_util[localindexes(S)], pids=1:n_procs)
-    qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=1:n_procs)
-    pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=1:n_procs)
-    residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=1:n_procs)
+    util = SharedArray{Float64}("/scratch/boutonm/util.bin", (ns,), init = S -> S[localindexes(S)] = init_util[localindexes(S)], pids=collect(1:n_procs))
+    qmat  = SharedArray{Float64}("/scratch/boutonm/qmat.bin", (ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=collect(1:n_procs))
+    pol = SharedArray{Int64}("/scratch/boutonm/pol.bin", (ns,), init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=collect(1:n_procs))
+    residual = SharedArray{Float64}("/scratch/boutonm/residual.bin", (1,), init = S -> S[Base.localindexes(S)] = 0., pids=collect(1:n_procs))
     S = state_type(mdp)
-    # states = SharedArray{S}(ns, init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=1:n_procs)
+    states = SharedArray{S}("/scratch/boutonm/states.bin", (ns,), init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=collect(1:n_procs))
     workers = WorkerPool(collect(1:n_procs))
     println("shared array initialized")
     flush(STDOUT)
@@ -113,7 +113,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         for c = 1:n_chunks
             state_indices = chunks[c]
             results = pmap(workers, 
-                           x -> solve_chunk(mdp, util, pol, qmat, solver.include_Q, residual, x), 
+                           x -> solve_chunk(mdp, states, util, pol, qmat, solver.include_Q, residual, x), 
                            state_indices)
         end # chunk loop 
 
@@ -127,18 +127,20 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
 end
 
 # updates shared utility and Q-Matrix using gauss-seidel value iteration (asynchronous)
-function solve_chunk(mdp::M, 
+function solve_chunk(mdp::M,
+                    states::SharedArray{S, 1}, 
                     util::SharedArray{Float64, 1}, 
                     pol::SharedArray{Int64, 1}, 
                     qmat::SharedArray{Float64, 2}, 
                     include_Q::Bool,
                     residual::SharedArray{Float64, 1},
                     state_indices::Tuple{Int64, Int64}
-                    ) where {M <: Union{MDP, POMDP}}
+                    ) where {S, M <: Union{MDP, POMDP}}
 
     discount_factor = discount(mdp)
     for istate=state_indices[1]:state_indices[2]
-        s = ind2state(mdp, istate)
+        #s = ind2state(mdp, istate)
+        s = states[istate]
         sub_aspace = actions(mdp, s)
         if isterminal(mdp, s)
             util[istate] = 0.0
