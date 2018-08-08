@@ -94,10 +94,11 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
         init_qmat = zeros(ns, na)
     end
     init_pol = zeros(Int64, ns)
-    
-    util = SharedArray{Float64}("/scratch/boutonm/util.bin", (ns,), init = S -> S[localindexes(S)] = init_util[localindexes(S)], pids=collect(1:n_procs))
+    qmat = init_qmat
+    # shared_array_file_root = "~/tmp/"
+    util = SharedArray{Float64}(ns, init = S -> S[localindexes(S)] = init_util[localindexes(S)], pids=collect(1:n_procs))
     # qmat  = SharedArray{Float64}("/scratch/boutonm/qmat.bin", (ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=collect(1:n_procs))
-    pol = SharedArray{Int64}("/scratch/boutonm/pol.bin", (ns,), init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=collect(1:n_procs))
+    pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=collect(1:n_procs))
     # residual = SharedArray{Float64}("/scratch/boutonm/residual.bin", (1,), init = S -> S[Base.localindexes(S)] = 0., pids=collect(1:n_procs))
     # S = state_type(mdp)
     # states = SharedArray{S}("/scratch/boutonm/states.bin", (ns,), init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=collect(1:n_procs))
@@ -112,12 +113,10 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     for i = 1:max_iterations
         tic()
         # residual[1] = 0.
-        for c = 1:n_chunks
-            state_indices = chunks[c]
-            results = pmap(workers, 
-                           x -> solve_chunk(mdp, util, pol, x), 
-                           state_indices)
-        end # chunk loop 
+        state_indices = chunks[1]
+        results = pmap(workers, 
+                        x -> solve_chunk(mdp, util, pol, x), 
+                        state_indices)
 
         iter_time = toq();
         total_time += iter_time
@@ -133,9 +132,11 @@ function solve_chunk(mdp::M,
                     util::SharedArray{Float64, 1}, 
                     pol::SharedArray{Int64, 1}, 
                     state_indices::Tuple{Int64, Int64}
-                    ) where {S, M <: Union{MDP, POMDP}}
+                    ) where {M <: Union{MDP, POMDP}}
 
     discount_factor = discount(mdp)
+    println("Working on states $(state_indices[1]) to $(state_indices[2])")
+    flush(STDOUT)
     for istate=state_indices[1]:state_indices[2]
         s = ind2state(mdp, istate)
         # s = states[istate]
@@ -169,6 +170,8 @@ function solve_chunk(mdp::M,
             # update the value array
         end
     end # state loop
+    println("Done")
+    flush(STDOUT)
     return 
 end
 
