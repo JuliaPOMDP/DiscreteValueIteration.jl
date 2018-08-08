@@ -113,6 +113,7 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     for i = 1:max_iterations
         tic()
         # residual[1] = 0.
+        residual = 0.
         state_indices = chunks[1]
         results = pmap(workers, 
                         x -> solve_chunk(mdp, util, pol, x), 
