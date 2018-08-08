@@ -138,6 +138,7 @@ function solve_chunk(mdp::M,
     discount_factor = discount(mdp)
     println("Working on states $(state_indices[1]) to $(state_indices[2])")
     flush(STDOUT)
+    tic()
     for istate=state_indices[1]:state_indices[2]
         s = ind2state(mdp, istate)
         # s = states[istate]
@@ -171,7 +172,8 @@ function solve_chunk(mdp::M,
             # update the value array
         end
     end # state loop
-    println("Done")
+    worker_time = toq();
+    println("Done $worker_time*1000")
     flush(STDOUT)
     return 
 end
