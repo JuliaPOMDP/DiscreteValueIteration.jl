@@ -71,10 +71,10 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     chunks = chunk_ordering(n_procs, order)
     
     # create an ordered list of states for fast iteration
-    verbose ? println("ordering states ...") : nothing
-    states_ = ordered_states(mdp)
-    verbose ? println("done ordering states") : nothing
-    verbose ? flush(STDOUT) : nothing
+    # verbose ? println("ordering states ...") : nothing
+    # states_ = ordered_states(mdp)
+    # verbose ? println("done ordering states") : nothing
+    # verbose ? flush(STDOUT) : nothing
 
 
 
