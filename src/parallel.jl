@@ -97,12 +97,12 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     qmat = init_qmat
     # shared_array_file_root = "~/tmp/"
     util = SharedArray{Float64}(ns, init = S -> S[localindexes(S)] = init_util[localindexes(S)], pids=collect(1:n_procs))
-    # qmat  = SharedArray{Float64}("/scratch/boutonm/qmat.bin", (ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=collect(1:n_procs))
+    qmat  = SharedArray{Float64}((ns, na), init = S -> S[Base.localindexes(S)] = init_qmat[localindexes(S)], pids=collect(1:n_procs))
     pol = SharedArray{Int64}(ns, init = S -> S[Base.localindexes(S)] = init_pol[localindexes(S)], pids=collect(1:n_procs))
-    # residual = SharedArray{Float64}("/scratch/boutonm/residual.bin", (1,), init = S -> S[Base.localindexes(S)] = 0., pids=collect(1:n_procs))
+    residual = SharedArray{Float64}(1, init = S -> S[Base.localindexes(S)] = 0., pids=collect(1:n_procs))
     # S = state_type(mdp)
     # states = SharedArray{S}("/scratch/boutonm/states.bin", (ns,), init = S -> S[Base.localindexes(S)] = states_[Base.localindexes(S)],  pids=collect(1:n_procs))
-    workers = WorkerPool(collect(1:n_procs))
+    # workers = WorkerPool(collect(1:n_procs))
     println("shared array initialized")
     flush(STDOUT)
 
@@ -112,12 +112,9 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     state_indices = chunks[1]
     for i = 1:max_iterations
         tic()
-        # residual[1] = 0.
-        residual = 0.
+        residual[1] = 0.
         state_indices = chunks[1]
-        results = pmap(workers, 
-                        x -> solve_chunk(mdp, util, pol, x), 
-                        state_indices)
+        results = pmap(x -> solve_chunk(mdp, util, pol, residual, qmat, include_Q, x), state_indices)
 
         iter_time = toq();
         total_time += iter_time
@@ -132,6 +129,9 @@ end
 function solve_chunk(mdp::M,
                     util::SharedArray{Float64, 1}, 
                     pol::SharedArray{Int64, 1}, 
+                    residual::SharedArray{Float64, 1},
+                    qmat::SharedArray{Float64, 2},
+                    include_Q::Bool,
                     state_indices::Tuple{Int64, Int64}
                     ) where {M <: Union{MDP, POMDP}}
 
@@ -164,16 +164,16 @@ function solve_chunk(mdp::M,
                     max_util = new_util
                     pol[istate] = iaction
                 end
-                # include_Q ? (qmat[istate, iaction] = new_util) : nothing
+                include_Q ? (qmat[istate, iaction] = new_util) : nothing
             end # action
-            util[istate] = max_util
-            # diff = abs(max_util - old_util)
-            # diff > residual[1] ? (residual[1] = diff) : nothing
             # update the value array
+            util[istate] = max_util
+            diff = abs(max_util - old_util)
+            diff > residual[1] ? (residual[1] = diff) : nothing
         end
     end # state loop
     worker_time = toq();
-    println("Done $worker_time*1000")
+    println("Done $worker_time")
     flush(STDOUT)
     return 
 end
