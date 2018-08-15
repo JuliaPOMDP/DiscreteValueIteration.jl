@@ -3,6 +3,7 @@ This module implements a value iteration solver that uses the interface defined 
 """
 module DiscreteValueIteration
 
+using Printf
 using POMDPs
 using POMDPToolbox
 
