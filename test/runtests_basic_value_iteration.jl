@@ -1,3 +1,4 @@
+using DelimitedFiles
 
 function support_serial_qtest(mdp::Union{MDP,POMDP}, file::AbstractString; niter::Int64=100, res::Float64=1e-3)
     qt = readdlm(file)
@@ -61,7 +62,7 @@ function test_init_solution()
     ys = 10
     mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
     qt = readdlm("grid-world-10x10-Q-matrix.txt")
-    ut = maximum(qt, 2)[:]
+    ut = maximum(qt, dims=2)[:]
     solver = ValueIterationSolver(verbose=true, init_util=ut, belres=1e-3)
     policy = solve(solver, mdp)
     return isapprox(ut, policy.util, rtol=1e-5)
@@ -75,7 +76,7 @@ function test_not_include_Q()
     ys = 10
     mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
     qt = readdlm("grid-world-10x10-Q-matrix.txt")
-    ut = maximum(qt, 2)[:]
+    ut = maximum(qt, dims=2)[:]
     niter = 100
     res = 1e-3
     solver = ValueIterationSolver(verbose=true, init_util=ut, belres=1e-3, include_Q=false)

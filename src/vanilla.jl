@@ -11,7 +11,7 @@ function ValueIterationSolver(;max_iterations::Int64 = 100,
                                belres::Float64 = 1e-3,
                                verbose::Bool = false,
                                include_Q::Bool = true,
-                               init_util::Vector{Float64}=Vector{Float64}(0))    
+                               init_util::Vector{Float64}=Vector{Float64}(undef, 0))    
     return ValueIterationSolver(max_iterations, belres, verbose, include_Q, init_util)
 end
 
@@ -52,7 +52,7 @@ function ValueIterationPolicy(mdp::Union{MDP,POMDP}, q::Matrix{Float64})
     p = zeros(ns)
     u = zeros(ns)
     for i = 1:ns
-        p[i] = indmax(q[i,:])
+        p[i] = argmax(q[i,:])
         u[i] = maximum(q[i,:])
     end
     action_map = ordered_actions(mdp)
@@ -67,8 +67,8 @@ end
 
 @POMDP_require solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}) begin
     P = typeof(mdp)
-    S = state_type(P)
-    A = action_type(P)
+    S = statetype(P)
+    A = actiontype(P)
     @req discount(::P)
     @req n_states(::P)
     @req n_actions(::P)
@@ -81,13 +81,11 @@ end
     @req actions(::P, ::S)
     as = actions(mdp)
     ss = states(mdp)
-    @req iterator(::typeof(as))
-    @req iterator(::typeof(ss))
-    s = first(iterator(ss))
-    a = first(iterator(as))
+    a = first(as)
+    s = first(ss)
     dist = transition(mdp, s, a)
     D = typeof(dist)
-    @req iterator(::D)
+    @req support(::D)
     @req pdf(::D,::S)
 end
 
@@ -140,7 +138,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
     # main loop
     for i = 1:max_iterations
         residual = 0.0
-        tic()
+        iter_time = @elapsed begin
         # state loop
         for (istate,s) in enumerate(states)
             sub_aspace = actions(mdp, s)
@@ -152,7 +150,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
                 max_util = -Inf
                 # action loop
                 # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
-                for a in iterator(sub_aspace)
+                for a in sub_aspace
                     iaction = action_index(mdp, a)
                     dist = transition(mdp, s, a) # creates distribution over neighbors
                     u = 0.0
@@ -175,7 +173,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
                 diff > residual ? (residual = diff) : nothing
             end
         end # state
-        iter_time = toq()
+        end # time
         total_time += iter_time
         solver.verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual, iter_time*1000.0, total_time) : nothing
         residual < belres ? break : nothing

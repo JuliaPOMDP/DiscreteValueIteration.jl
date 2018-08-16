@@ -5,7 +5,8 @@ module DiscreteValueIteration
 
 using Printf
 using POMDPs
-using POMDPToolbox
+using POMDPModelTools
+using POMDPPolicies
 
 import POMDPs: Solver, solve, Policy, action, value 
 
