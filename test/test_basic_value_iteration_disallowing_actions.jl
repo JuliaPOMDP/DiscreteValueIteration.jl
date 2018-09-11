@@ -7,8 +7,8 @@ POMDPs.n_states(g::SpecialGridWorld) = n_states(g.gw)
 POMDPs.n_actions(g::SpecialGridWorld) = n_actions(g.gw)
 POMDPs.transition(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction) = transition(g.gw, s, a)
 POMDPs.reward(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction, sp::GridWorldState) = reward(g.gw, s, a, sp)
-POMDPs.state_index(g::SpecialGridWorld, s::GridWorldState) = state_index(g.gw, s)
-POMDPs.action_index(g::SpecialGridWorld, a::GridWorldAction) = action_index(g.gw, a)
+POMDPs.stateindex(g::SpecialGridWorld, s::GridWorldState) = stateindex(g.gw, s)
+POMDPs.actionindex(g::SpecialGridWorld, a::GridWorldAction) = actionindex(g.gw, a)
 POMDPs.actions(g::SpecialGridWorld, s::GridWorldState) = actions(g.gw, s)
 POMDPs.states(g::SpecialGridWorld) = states(g.gw)
 POMDPs.actions(g::SpecialGridWorld) = actions(g.gw)
@@ -17,7 +17,7 @@ POMDPs.actions(g::SpecialGridWorld) = actions(g.gw)
 # particular feasible actions from each state....
 function POMDPs.actions(mdp::SpecialGridWorld, s::GridWorldState)
     # up: 1, down: 2, left: 3, right: 4
-    sidx = state_index(mdp, s)
+    sidx = stateindex(mdp, s)
     if sidx == 1
         acts = [GridWorldAction(:left), GridWorldAction(:right)]
     elseif sidx == 2

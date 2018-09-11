@@ -76,8 +76,8 @@ end
     @subreq ordered_actions(mdp)
     @req transition(::P,::S,::A)
     @req reward(::P,::S,::A,::S)
-    @req state_index(::P,::S)
-    @req action_index(::P, ::A)
+    @req stateindex(::P,::S)
+    @req actionindex(::P, ::A)
     @req actions(::P, ::S)
     as = actions(mdp)
     ss = states(mdp)
@@ -104,7 +104,7 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
     
     # deprecation warning - can be removed when Julia 1.0 is adopted
     if !isempty(kwargs)
-        warn("Keyword args for solve(::ValueIterationSolver, ::MDP) are no longer supported. For verbose output, use the verbose option in the ValueIterationSolver")
+        @warn("Keyword args for solve(::ValueIterationSolver, ::MDP) are no longer supported. For verbose output, use the verbose option in the ValueIterationSolver")
     end
     
     @warn_requirements solve(solver, mdp)
@@ -151,13 +151,13 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
                 # action loop
                 # util(s) = max_a( R(s,a) + discount_factor * sum(T(s'|s,a)util(s') )
                 for a in sub_aspace
-                    iaction = action_index(mdp, a)
+                    iaction = actionindex(mdp, a)
                     dist = transition(mdp, s, a) # creates distribution over neighbors
                     u = 0.0
                     for (sp, p) in weighted_iterator(dist)
                         p == 0.0 ? continue : nothing # skip if zero prob
                         r = reward(mdp, s, a, sp)
-                        isp = state_index(mdp, sp)
+                        isp = stateindex(mdp, sp)
                         u += p * (r + discount_factor * util[isp])
                     end
                     new_util = u
@@ -186,12 +186,12 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
 end
 
 function action(policy::ValueIterationPolicy, s::S) where S
-    sidx = state_index(policy.mdp, s)
+    sidx = stateindex(policy.mdp, s)
     aidx = policy.policy[sidx]
     return policy.action_map[aidx]
 end
 
 function value(policy::ValueIterationPolicy, s::S) where S
-    sidx = state_index(policy.mdp, s)
+    sidx = stateindex(policy.mdp, s)
     policy.util[sidx]
 end

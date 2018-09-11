@@ -1,5 +1,6 @@
 using DiscreteValueIteration
 using POMDPModels
+using POMDPModelTools
 using POMDPs
 using Test
 
