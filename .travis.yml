@@ -6,9 +6,9 @@ julia:
   - 1.0
 notifications:
   email: false
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("DiscreteValueIteration"; coverage=true)'  
+# script:
+#   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+#   - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("DiscreteValueIteration"; coverage=true)'  
 
 after_success:
   - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
