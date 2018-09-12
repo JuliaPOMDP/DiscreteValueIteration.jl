@@ -3,8 +3,10 @@ This module implements a value iteration solver that uses the interface defined 
 """
 module DiscreteValueIteration
 
+using Printf
 using POMDPs
-using POMDPToolbox
+using POMDPModelTools
+using POMDPPolicies
 
 import POMDPs: Solver, solve, Policy, action, value 
 
