@@ -11,7 +11,8 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [extras]
 POMDPModels = "355abbd5-f08e-5560-ac9e-8b5f2592a0ca"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "POMDPModels"]
+test = ["Test", "DelimitedFiles", "POMDPModels"]
