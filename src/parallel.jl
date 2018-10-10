@@ -86,13 +86,13 @@ function asynchronous_parallel_value_iteration(solver::ParallelValueIterationSol
     util = SharedArray{Float64}(ns, init = S -> S[localindices(S)] = init_util[localindices(S)])    
     pol = SharedArray{Int64}(ns, init = S -> S[localindices(S)] = init_pol[localindices(S)])
     residual = SharedArray{Float64}(1, init = S -> S[localindices(S)] .= 0.)
-
+    pool = CachingPool(workers())
     iter_time  = 0.0
     total_time = 0.0
     for i = 1:max_iterations
         iter_time = @elapsed begin
             residual[1] = 0.
-            results = pmap(x -> solve_chunk(mdp, shared_states, util, pol, qmat, include_Q, residual, x), state_chunks)
+            results = pmap(x -> solve_chunk(mdp, shared_states, util, pol, qmat, include_Q, residual, x), pool, state_chunks)
         end
         total_time += iter_time
         verbose ? @printf("[Iteration %-4d] residual: %10.3G | iteration runtime: %10.3f ms, (%10.3G s total)\n", i, residual[1], iter_time*1000.0, total_time) : nothing
