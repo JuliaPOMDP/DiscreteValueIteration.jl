@@ -15,6 +15,9 @@ end
 @testset "basic disallowing actions" begin
     include("test_basic_value_iteration_disallowing_actions.jl") # then a complex form where states determine actions
 end
+@testset "parallel asynchronous vi" begin
+    include("test_parallel_vi.jl")
+end
 
 println("Testing Requirements")
 @requirements_info ValueIterationSolver() GridWorld()
