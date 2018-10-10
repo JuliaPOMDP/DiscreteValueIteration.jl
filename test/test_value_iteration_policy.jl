@@ -5,7 +5,7 @@ function test_creation_of_policy_given_utilities()
     #
     # GridWorld:
     # |_________|_________|_________| plus a fake state for absorbing
-    mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
     # Create a starter set of utilities 
     # 0.0 is associated with the fake absorbing state
     correct_utility = [5.45632, 8.20505, 10.0, 0.0] 
@@ -22,7 +22,7 @@ function test_creation_of_policy_given_q_util_policy()
     #
     # GridWorld:
     # |_________|_________|_________| plus a fake state for absorbing
-    mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
     correct_utility = [5.45632, 8.20505, 10.0, 0.0] 
     correct_qmat = [5.45636 5.1835 5.1835 5.1835; 8.20506 6.47848 7.7948 7.7948; 10.0 10.0 10.0 10.0; 0.0 0.0 0.0 0.0]
     correct_policy = [1,1,1,1]
@@ -38,7 +38,7 @@ function test_creation_of_policy_given_q()
     #
     # GridWorld:
     # |_________|_________|_________| plus a fake state for absorbing
-    mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
     correct_qmat = [5.45636 5.1835 5.1835 5.1835; 8.20506 6.47848 7.7948 7.7948; 10.0 10.0 10.0 10.0; 0.0 0.0 0.0 0.0]
     
     # Derive a policy & check that they match  
@@ -52,7 +52,7 @@ function test_creation_of_policy_given_policy()
     #
     # GridWorld:
     # |_________|_________|_________| plus a fake state for absorbing
-    mdp = GridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
     correct_policy = [1,1,1,1]
     policy = ValueIterationPolicy(mdp, policy=correct_policy)
     return policy.policy == correct_policy

@@ -22,7 +22,7 @@ function test_complex_gridworld()
     rvals = [-10.0, -5.0, 10.0, 3.0]
     xs = 10
     ys = 10
-    mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
+    mdp = LegacyGridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
     file = "grid-world-10x10-Q-matrix.txt"
     niter = 100
     res = 1e-3
@@ -41,7 +41,7 @@ function test_simple_grid()
     # |1 (1,1)__u,d,l,r__|2 (2,1)______u,d,l,r_____|
     # ----------------------------------------------
     # 7 (0,0) is absorbing state
-    mdp = GridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0])
+    mdp = LegacyGridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0])
     
     solver = ValueIterationSolver(verbose=true)
     policy = solve(solver, mdp)
@@ -60,7 +60,7 @@ function test_init_solution()
     rvals = [-10.0, -5.0, 10.0, 3.0]
     xs = 10
     ys = 10
-    mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
+    mdp = LegacyGridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
     qt = readdlm("grid-world-10x10-Q-matrix.txt")
     ut = maximum(qt, dims=2)[:]
     solver = ValueIterationSolver(verbose=true, init_util=ut, belres=1e-3)
@@ -74,7 +74,7 @@ function test_not_include_Q()
     rvals = [-10.0, -5.0, 10.0, 3.0]
     xs = 10
     ys = 10
-    mdp = GridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
+    mdp = LegacyGridWorld(sx=xs, sy=ys, rs = rstates, rv = rvals)
     qt = readdlm("grid-world-10x10-Q-matrix.txt")
     ut = maximum(qt, dims=2)[:]
     niter = 100
@@ -85,7 +85,7 @@ function test_not_include_Q()
 end
 
 function test_warning()
-    mdp = GridWorld()
+    mdp = LegacyGridWorld()
     solver = ValueIterationSolver()
     println("There should be a warning bellow: ")
     solve(solver, mdp, verbose=true)

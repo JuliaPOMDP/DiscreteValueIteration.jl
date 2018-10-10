@@ -17,5 +17,5 @@ end
 end
 
 println("Testing Requirements")
-@requirements_info ValueIterationSolver() GridWorld()
+@requirements_info ValueIterationSolver() LegacyGridWorld()
 end
