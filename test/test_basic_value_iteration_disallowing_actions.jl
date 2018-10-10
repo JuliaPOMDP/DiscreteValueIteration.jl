@@ -1,5 +1,5 @@
 mutable struct SpecialGridWorld <: MDP{GridWorldState, GridWorldAction}
-    gw::GridWorld
+    gw::LegacyGridWorld
 end
 
 POMDPs.discount(g::SpecialGridWorld) = discount(g.gw)
@@ -48,7 +48,7 @@ function test_conditioning_actions_on_state()
     # |3 (1,2)__l,u__|4 (2,2)_______l,r________|
     # |1 (1,1)__l,r__|2 (2,1)_______u,r________|
     # 7 (0,0) is absorbing state
-    mdp = SpecialGridWorld(GridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
+    mdp = SpecialGridWorld(LegacyGridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
 
     solver = ValueIterationSolver(verbose=true)
     policy = solve(solver, mdp)
