@@ -195,3 +195,12 @@ function value(policy::ValueIterationPolicy, s::S) where S
     sidx = stateindex(policy.mdp, s)
     policy.util[sidx]
 end
+
+function POMDPPolicies.actionvalues(policy::ValueIterationPolicy, s::S) where S
+    if !policy.include_Q
+        error("ValueIterationPolicyError: the policy does not contain the Q function!")
+    else
+        sidx = stateindex(policy.mdp, s)
+        return policy.qmat[sidx,:]
+    end
+end
