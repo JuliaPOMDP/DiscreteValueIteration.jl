@@ -6,14 +6,14 @@ using BenchmarkTools
 
 function bench_sparsevi(size)
     world = SimpleGridWorld(size=size)
-    solver = SparseValueIterationSolver(max_iterations=500, belres=1e-4)
+    solver = SparseValueIterationSolver(max_iterations=500, belres=0.0)
     policy = solve(solver, world)
     return policy
 end
 
 function bench_vanillavi(size)
     world = SimpleGridWorld(size=size)
-    solver = ValueIterationSolver(max_iterations=500, belres=1e-4)
+    solver = ValueIterationSolver(max_iterations=500, belres=0.0)
     policy = solve(solver, world)
     return policy
 end
