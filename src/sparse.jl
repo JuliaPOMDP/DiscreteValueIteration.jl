@@ -1,39 +1,17 @@
 struct SparseValueIterationSolver <: Solver
     max_iterations::Int64
     belres::Float64 # the Bellman Residual
+    include_Q::Bool
     verbose::Bool
     init_util::Vector{Float64}
 end
 
 function SparseValueIterationSolver(;max_iterations=500,
-                                    belres::Float64 = 1e-3,
+                                    belres::Float64=1e-3,
+                                    include_Q::Bool=true,
                                     verbose::Bool=false,
                                     init_util::Vector{Float64}=Vector{Float64}(undef, 0))
-    return SparseValueIterationSolver(max_iterations, belres, verbose, init_util)
-end
-
-struct SparseVIPolicy{F}
-    v_S::AbstractVector{F}
-    qvals_S_A::AbstractArray{F, 2}
-    policy_S::AbstractVector{Int}
-    action_map::Vector # Maps the action index to the concrete action type
-    mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
-end
-
-function SparseVIPolicy(mdp::Union{MDP, POMDP}; utility::AbstractVector{Float64}=zeros(n_states(mdp)),
-                        policy::AbstractVector{Int64}=zeros(Int64, n_states(mdp)))
-    ns = n_states(mdp)
-    na = n_actions(mdp)
-    @assert length(utility) == ns "Input utility dimension mismatch"
-    @assert length(policy) == ns "Input policy dimension mismatch"
-    action_map = ordered_actions(mdp)
-    qmat = zeros(ns, na)
-    return SparseVIPolicy(utility, qmat, policy, action_map, mdp)
-end
-
-function SparseVIPolicy(mdp::Union{MDP, POMDP}, q::AbstractMatrix{Float64}, util::AbstractVector{Float64}, policy::AbstractVector{Int64})
-    action_map = ordered_actions(mdp)
-    return SparseVIPolicy(util, q, policy, action_map, mdp)
+    return SparseValueIterationSolver(max_iterations, belres, include_Q, verbose, init_util)
 end
 
 @POMDP_require solve(solver::SparseValueIterationSolver, mdp::Union{MDP,POMDP}) begin
@@ -142,16 +120,10 @@ function solve(solver::SparseValueIterationSolver, mdp::Union{MDP, POMDP})
     qvalue!(mdp, transition_A_S_S2, reward_S, v_S, qvals_S_A)
     # Rounding to avoid floating point error noise
     policy_S = dropdims(getindex.(argmax(round.(qvals_S_A, digits=20), dims=2), 2), dims=2)
-    policy = SparseVIPolicy(mdp, qvals_S_A, v_S, policy_S)
-end
-
-function action(policy::SparseVIPolicy, s::S) where S
-    sidx = stateindex(policy.mdp, s)
-    aidx = policy.policy_S[sidx]
-    return policy.action_map[aidx]
-end
-
-function value(policy::SparseVIPolicy, s::S) where S
-    sidx = stateindex(policy.mdp, s)
-    return policy.v_S[sidx]
+    if solver.include_Q
+        policy = ValueIterationPolicy(mdp, qvals_S_A, v_S, policy_S)
+    else
+        policy = ValueIterationPolicy(mdp, utility=v_S, policy=policy_S, include_Q=false)
+    end
+    return policy
 end

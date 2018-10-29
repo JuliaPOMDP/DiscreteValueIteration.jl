@@ -21,6 +21,7 @@ export
     value,
     locals
 
+include("common.jl")
 include("vanilla.jl")
 include("sparse.jl")
 include("docs.jl")
