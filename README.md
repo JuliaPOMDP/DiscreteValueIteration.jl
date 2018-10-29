@@ -5,7 +5,7 @@
 
 This package implements the discrete value iteration algorithm in Julia for solving Markov decision processes (MDPs).
 The user should define the problem according to the API in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). Examples of
-problem definitions can be found in [POMDPModels.jl](https://github.com/JuliaPOMDP/POMDPModels.jl). For an extensive tutorial, see the [these](https://github.com/JuliaPOMDP/POMDPExamples.jl) notebooks.
+problem definitions can be found in [POMDPModels.jl](https://github.com/JuliaPOMDP/POMDPModels.jl). For an extensive tutorial, see [these](https://github.com/JuliaPOMDP/POMDPExamples.jl) notebooks.
 
 ## Installation
 
