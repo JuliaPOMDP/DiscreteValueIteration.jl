@@ -24,7 +24,7 @@ end
     @subreq ordered_states(mdp)
     @subreq ordered_actions(mdp)
     @req transition(::P,::S,::A)
-    @req reward(::P,::S,::A)
+    @req reward(::P,::S,::A,::S)
     @req stateindex(::P,::S)
     @req actionindex(::P, ::A)
     @req actions(::P, ::S)
@@ -53,10 +53,10 @@ function transition_matrix_a_s_sp(mdp::MDP)
     transmat_col_A = [Float64[] for _ in 1:n_actions(mdp)]
     transmat_data_A = [Float64[] for _ in 1:n_actions(mdp)]
 
-    for a in actions(mdp)
-        ai = actionindex(mdp, a)
-        for s in states(mdp)
-            si = stateindex(mdp, s)
+    for s in states(mdp)
+        si = stateindex(mdp, s)
+        for a in actions(mdp, s)
+            ai = actionindex(mdp, a)
             if !isterminal(mdp, s) # if terminal, the transition probabilities are all just zero
                 td = transition(mdp, s, a)
                 for (sp, p) in weighted_iterator(td)
@@ -80,7 +80,18 @@ function reward_s_a(mdp::MDP)
     reward_S_A = zeros(n_states(mdp), n_actions(mdp))
     for s in states(mdp)
         for a in actions(mdp)
-            reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = reward(mdp, s, a)
+            if @implemented(reward(::typeof(mdp), ::typeof(s), ::typeof(s)))
+                reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = reward(mdp, s, a)
+            else
+                td = transition(mdp, s, a)
+                r = 0.0
+                for (sp, p) in weighted_iterator(td)
+                    if p > 0.0
+                        r += p*reward(mdp, s, a, sp)
+                    end
+                end
+                reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = r
+            end
         end
     end
     return reward_S_A
