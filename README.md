@@ -5,7 +5,9 @@
 
 This package implements the discrete value iteration algorithm in Julia for solving Markov decision processes (MDPs).
 The user should define the problem according to the API in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). Examples of
-problem definitions can be found in [POMDPModels.jl](https://github.com/JuliaPOMDP/POMDPModels.jl). For an extensive tutorial, see the [these](https://github.com/JuliaPOMDP/POMDPExamples.jl) notebooks.
+problem definitions can be found in [POMDPModels.jl](https://github.com/JuliaPOMDP/POMDPModels.jl). For an extensive tutorial, see [these](https://github.com/JuliaPOMDP/POMDPExamples.jl) notebooks.
+
+There are two solvers in the package. The "vanilla" [`ValueIterationSolver`](src/vanilla.jl) calls functions from the POMDPs.jl interface in every iteration, while the [`SparseValueIterationSolver`](src/sparse.jl) first creates sparse transition and reward matrices and then performs value iteration with the new matrix representation. While both solvers take advantage of sparsity, the `SparseValueIterationSolver` is generally faster because of low-level optimizations, while the `ValueIterationSolver` has the advantage that it does not require allocation of transition matrices (which could potentially be too large to fit in memory).
 
 ## Installation
 
