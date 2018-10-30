@@ -14,7 +14,6 @@ import POMDPs: Solver, solve, Policy, action, value
 export
     ValueIterationPolicy,
     ValueIterationSolver,
-    SparseVIPolicy,
     SparseValueIterationSolver,
     solve,
     action,
