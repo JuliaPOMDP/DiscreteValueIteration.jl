@@ -24,7 +24,7 @@ end
     @subreq ordered_states(mdp)
     @subreq ordered_actions(mdp)
     @req transition(::P,::S,::A)
-    @req reward(::P,::S,::A,::S)
+    @req reward(::P,::S,::A)
     @req stateindex(::P,::S)
     @req actionindex(::P, ::A)
     @req actions(::P, ::S)
@@ -38,10 +38,10 @@ end
     @req pdf(::D,::S)
 end
 
-function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S::AbstractVector{F}, value_S::AbstractVector{F}, out_qvals_S_A) where {F}
+function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S_A::AbstractMatrix{F}, value_S::AbstractVector{F}, out_qvals_S_A) where {F}
     @assert size(out_qvals_S_A) == (n_states(m), n_actions(m))
     for a in 1:n_actions(m)
-        out_qvals_S_A[:, a] = reward_S + discount(m) * transition_A_S_S2[a] * value_S
+        out_qvals_S_A[:, a] = reward_S_A[:, a] + discount(m) * transition_A_S_S2[a] * value_S
     end
 end
 
@@ -68,6 +68,8 @@ function transition_matrix_a_s_sp(mdp::MDP)
                     end
                 end
             else
+                # Terminal state
+                # Note: Assumes that reward is R(s,a) and sp is absorbing state
                 push!(transmat_row_A[ai], si)
                 push!(transmat_col_A[ai], si)
                 push!(transmat_data_A[ai], 1.0)
@@ -79,12 +81,14 @@ function transition_matrix_a_s_sp(mdp::MDP)
     return transmats_A_S_S2
 end
 
-function reward_s(mdp::MDP)
-    reward_S = zeros(n_states(mdp))
+function reward_s_a(mdp::MDP)
+    reward_S_A = zeros(n_states(mdp), n_actions(mdp))
     for s in states(mdp)
-        reward_S[stateindex(mdp, s)] = reward(mdp, s)
+        for a in actions(mdp)
+            reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = reward(mdp, s, a)
+        end
     end
-    return reward_S
+    return reward_S_A
 end
 
 function solve(solver::SparseValueIterationSolver, mdp::Union{MDP, POMDP})
@@ -98,14 +102,14 @@ function solve(solver::SparseValueIterationSolver, mdp::Union{MDP, POMDP})
     end
 
     transition_A_S_S2 = transition_matrix_a_s_sp(mdp)
-    reward_S = reward_s(mdp)
+    reward_S_A = reward_s_a(mdp)
     qvals_S_A = zeros(nS, nA)
     maxchanges_T = zeros(solver.max_iterations)
 
     total_time = 0.0
     for i in 1:solver.max_iterations
         iter_time = @elapsed begin
-            qvalue!(mdp, transition_A_S_S2, reward_S, v_S, qvals_S_A)
+            qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A)
             new_v_S = dropdims(maximum(qvals_S_A, dims=2), dims=2)
             @assert size(v_S) == size(new_v_S)
             maxchanges_T[i] = maximum(abs.(new_v_S .- v_S))
@@ -117,7 +121,7 @@ function solve(solver::SparseValueIterationSolver, mdp::Union{MDP, POMDP})
         end
         maxchanges_T[i] < solver.belres ? break : nothing
     end
-    qvalue!(mdp, transition_A_S_S2, reward_S, v_S, qvals_S_A)
+    qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A)
     # Rounding to avoid floating point error noise
     policy_S = dropdims(getindex.(argmax(round.(qvals_S_A, digits=20), dims=2), 2), dims=2)
     if solver.include_Q
