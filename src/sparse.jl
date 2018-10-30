@@ -41,7 +41,7 @@ end
 function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S_A::AbstractMatrix{F}, value_S::AbstractVector{F}, out_qvals_S_A) where {F}
     @assert size(out_qvals_S_A) == (n_states(m), n_actions(m))
     for a in 1:n_actions(m)
-        out_qvals_S_A[:, a] = reward_S_A[:, a] + discount(m) * transition_A_S_S2[a] * value_S
+        out_qvals_S_A[:, a] = view(reward_S_A, :, a) + discount(m) * transition_A_S_S2[a] * value_S
     end
 end
 
