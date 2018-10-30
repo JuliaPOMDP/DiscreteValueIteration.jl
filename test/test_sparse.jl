@@ -5,7 +5,13 @@ function test_sparse_vanilla_same(m)
     sparse_policy = solve(sparse_solver, m)
     @test vanilla_policy.policy == sparse_policy.policy
     @test isapprox(vanilla_policy.util, sparse_policy.util; atol=1e-3)
-    @test isapprox(vanilla_policy.qmat, sparse_policy.qmat; atol=1e-3)
+    for s in states(m)
+        si = stateindex(m, s)
+        for a in actions(m, s)
+            ai = actionindex(m, a)
+            @test isapprox(vanilla_policy.qmat[si, ai], sparse_policy.qmat[si, ai]; atol=1e-3)
+        end
+    end
 end
 
 m1 = SimpleGridWorld(size=(10,10))

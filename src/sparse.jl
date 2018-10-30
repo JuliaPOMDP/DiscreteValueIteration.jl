@@ -77,21 +77,17 @@ function transition_matrix_a_s_sp(mdp::MDP)
 end
 
 function reward_s_a(mdp::MDP)
-    reward_S_A = zeros(n_states(mdp), n_actions(mdp))
+    reward_S_A = fill(-Inf, (n_states(mdp), n_actions(mdp))) # set reward for all actions to -Inf unless they are in actions(mdp, s)
     for s in states(mdp)
-        for a in actions(mdp)
-            if @implemented(reward(::typeof(mdp), ::typeof(s), ::typeof(s)))
-                reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = reward(mdp, s, a)
-            else
-                td = transition(mdp, s, a)
-                r = 0.0
-                for (sp, p) in weighted_iterator(td)
-                    if p > 0.0
-                        r += p*reward(mdp, s, a, sp)
-                    end
+        for a in actions(mdp, s)
+            td = transition(mdp, s, a)
+            r = 0.0
+            for (sp, p) in weighted_iterator(td)
+                if p > 0.0
+                    r += p*reward(mdp, s, a, sp)
                 end
-                reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = r
             end
+            reward_S_A[stateindex(mdp, s), actionindex(mdp, a)] = r
         end
     end
     return reward_S_A
