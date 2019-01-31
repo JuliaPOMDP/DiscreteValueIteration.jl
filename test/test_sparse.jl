@@ -19,3 +19,30 @@ test_sparse_vanilla_same(m1)
 
 m2 = SpecialGridWorld()
 test_sparse_vanilla_same(m2)
+
+## Two state MDP to test for terminal states
+
+struct TwoStatesMDP <: MDP{Int, Int} end
+
+POMDPs.n_states(mdp::TwoStatesMDP) = 2
+POMDPs.states(mdp::TwoStatesMDP) = 1:2
+POMDPs.stateindex(mdp::TwoStatesMDP, s) = s 
+POMDPs.n_actions(mdp::TwoStatesMDP) = 2
+POMDPs.actions(mdp::TwoStatesMDP) = 1:2
+POMDPs.actionindex(mdp::TwoStatesMDP, a) = a
+POMDPs.discount(mdp::TwoStatesMDP) = 0.95
+POMDPs.transition(mdp::TwoStatesMDP, s, a) = SparseCat([a], [1.0])
+POMDPs.reward(mdp::TwoStatesMDP, s, a, sp) = float(sp == 2)
+POMDPs.isterminal(mdp::TwoStatesMDP, s) = s == 2
+
+
+mdp = TwoStatesMDP()
+solver = ValueIterationSolver(verbose = true)
+policy = solve(solver, mdp)
+
+sparsesolver = SparseValueIterationSolver(verbose=true)
+sparsepolicy = solve(sparsesolver, mdp)
+
+@test sparsepolicy.qmat == policy.qmat 
+@test value(sparsepolicy, 2) ≈ 0.0
+
