@@ -45,7 +45,7 @@ function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S_A::AbstractMat
     end
 end
 
-function transition_matrix_a_s_sp(mdp::MDP)
+function transition_matrix_a_s_sp(mdp::Union{MDP,POMDP})
     # Thanks to zach
     na = n_actions(mdp)
     ns = n_states(mdp)
@@ -76,7 +76,7 @@ function transition_matrix_a_s_sp(mdp::MDP)
     return transmats_A_S_S2
 end
 
-function reward_s_a(mdp::MDP)
+function reward_s_a(mdp::Union{MDP,POMDP})
     reward_S_A = fill(-Inf, (n_states(mdp), n_actions(mdp))) # set reward for all actions to -Inf unless they are in actions(mdp, s)
     for s in states(mdp)
         if isterminal(mdp, s)
