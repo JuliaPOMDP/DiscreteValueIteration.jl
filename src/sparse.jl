@@ -71,7 +71,7 @@ function transition_matrix_a_s_sp(mdp::MDP)
         end
     end
     transmats_A_S_S2 = [sparse(transmat_row_A[a], transmat_col_A[a], transmat_data_A[a], n_states(mdp), n_states(mdp)) for a in 1:n_actions(mdp)]
-    # Note: not valid for terminal states
+    # Note: assert below is not valid for terminal states
     # @assert all(all(sum(transmats_A_S_S2[a], dims=2) .≈ ones(n_states(mdp))) for a in 1:n_actions(mdp)) "Transition probabilities must sum to 1"
     return transmats_A_S_S2
 end
