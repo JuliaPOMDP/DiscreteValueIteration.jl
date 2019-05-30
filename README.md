@@ -58,7 +58,7 @@ Once the above functions are defined, the solver can be called with the followin
 using DiscreteValueIteration
 
 mdp = MyMDP() # initializes the MDP
-solver = ValueIterationSolver(max_iterations=100, belres=1e-6) # initializes the Solver type
+solver = ValueIterationSolver(max_iterations=100, belres=1e-6) # creates the solver
 solve(solver, mdp) # runs value iterations
 ```
 

@@ -49,8 +49,8 @@ function transition_matrix_a_s_sp(mdp::MDP)
     # Thanks to zach
     na = n_actions(mdp)
     ns = n_states(mdp)
-    transmat_row_A = [Float64[] for _ in 1:n_actions(mdp)]
-    transmat_col_A = [Float64[] for _ in 1:n_actions(mdp)]
+    transmat_row_A = [Int[] for _ in 1:n_actions(mdp)]
+    transmat_col_A = [Int[] for _ in 1:n_actions(mdp)]
     transmat_data_A = [Float64[] for _ in 1:n_actions(mdp)]
 
     for s in states(mdp)
