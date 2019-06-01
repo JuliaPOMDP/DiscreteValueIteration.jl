@@ -67,3 +67,11 @@ function POMDPPolicies.actionvalues(policy::ValueIterationPolicy, s::S) where S
         return policy.qmat[sidx,:]
     end
 end
+
+function Base.show(io::IO, mime::MIME"text/plain", p::ValueIterationPolicy)
+    summary(io, p)
+    println(io, ':')
+    ds = get(io, :displaysize, displaysize(io))
+    ioc = IOContext(io, :displaysize=>(first(ds)-1, last(ds)))
+    showpolicy(ioc, mime, p.mdp, p)
+end
