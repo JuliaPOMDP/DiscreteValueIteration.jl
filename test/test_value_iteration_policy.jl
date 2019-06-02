@@ -79,3 +79,13 @@ end
 @test test_creation_of_policy_given_policy() == true
 @test test_actionvalues()
 @test_throws ErrorException test_actionvalues_error()
+
+@testset "policy show" begin
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    correct_qmat = [5.45636 5.1835 5.1835 5.1835; 8.20506 6.47848 7.7948 7.7948; 10.0 10.0 10.0 10.0; 0.0 0.0 0.0 0.0]
+    policy = ValueIterationPolicy(mdp, correct_qmat)
+    iob = IOBuffer()
+    io = IOContext(iob, :limit=>true, :displaysize=>(10, 80))
+    show(io, MIME("text/plain"), policy)
+    @test String(take!(iob)) == "ValueIterationPolicy{Float64}:\n GridWorldState(1, 1, false) -> :up\n GridWorldState(1, 2, false) -> :up\n GridWorldState(1, 3, false) -> :up\n GridWorldState(0, 0, true) -> :up"
+end
