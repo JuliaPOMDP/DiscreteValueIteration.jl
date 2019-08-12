@@ -11,8 +11,8 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-POMDPPolicies = ">= 0.1.4"
 POMDPModelTools = ">= 0.1.7"
+POMDPPolicies = ">= 0.1.4"
 
 [extras]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"

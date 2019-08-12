@@ -96,4 +96,4 @@ end
 @test test_init_solution() == true
 @test test_not_include_Q() == true
 test_warning()
-@test_throws ErrorException solve(ValueIterationSolver(), TigerPOMDP())
+@test_throws String solve(ValueIterationSolver(), TigerPOMDP())
