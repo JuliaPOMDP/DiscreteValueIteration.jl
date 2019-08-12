@@ -45,4 +45,4 @@ sparsepolicy = solve(sparsesolver, mdp)
 
 @test sparsepolicy.qmat == policy.qmat 
 @test value(sparsepolicy, 2) ≈ 0.0
-
+@test_throws ErrorException solve(SparseValueIterationSolver(), TigerPOMDP())

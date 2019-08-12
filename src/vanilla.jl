@@ -50,7 +50,7 @@ end
 # policy = ValueIterationPolicy(mdp)
 # solve(solver, mdp, policy, verbose=true)
 #####################################################################
-function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
+function solve(solver::ValueIterationSolver, mdp::MDP; kwargs...)
     
     # deprecation warning - can be removed when Julia 1.0 is adopted
     if !isempty(kwargs)
@@ -133,4 +133,16 @@ function solve(solver::ValueIterationSolver, mdp::Union{MDP,POMDP}; kwargs...)
     else
         return ValueIterationPolicy(mdp, utility=util, policy=pol, include_Q=false)
     end
+end
+
+function solve(::ValueIterationSolver, ::POMDP)
+    throw("""
+           ValueIterationError: `solve(::ValueIterationSolver, ::POMDP)` is not supported,
+          `ValueIterationSolver` supports MDP models only, if you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
+           ```
+           solver = ValueIterationSolver()
+           mdp = UnderlyingMDP(pomdp)
+           solve(solver, mdp)
+           ```
+           """)
 end

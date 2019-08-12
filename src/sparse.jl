@@ -90,3 +90,15 @@ end
 function solve(solver::SparseValueIterationSolver, mdp::MDP)
     return solve(solver, SparseTabularMDP(mdp))
 end
+
+function solve(::SparseValueIterationSolver, ::POMDP)
+    throw("""
+           ValueIterationError: `solve(::SparseValueIterationSolver, ::POMDP)` is not supported,
+          `SparseValueIterationSolver` supports MDP models only, if you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
+           ```
+           solver = ValueIterationSolver()
+           mdp = UnderlyingMDP(pomdp)
+           solve(solver, mdp)
+           ```
+           """)
+end
