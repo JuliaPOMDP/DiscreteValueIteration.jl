@@ -138,7 +138,8 @@ end
 function solve(::ValueIterationSolver, ::POMDP)
     throw("""
            ValueIterationError: `solve(::ValueIterationSolver, ::POMDP)` is not supported,
-          `ValueIterationSolver` supports MDP models only, if you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
+          `ValueIterationSolver` supports MDP models only, look at QMDP.jl for a POMDP solver that assumes full observability.
+           If you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
            ```
            solver = ValueIterationSolver()
            mdp = UnderlyingMDP(pomdp)

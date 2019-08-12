@@ -94,7 +94,8 @@ end
 function solve(::SparseValueIterationSolver, ::POMDP)
     throw("""
            ValueIterationError: `solve(::SparseValueIterationSolver, ::POMDP)` is not supported,
-          `SparseValueIterationSolver` supports MDP models only, if you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
+          `SparseValueIterationSolver` supports MDP models only, look at QMDP Solver for a POMDP solver that assumes full observability.
+           If you still wish to use the transition and reward from your POMDP model you can use the `UnderlyingMDP` wrapper from POMDPModelTools.jl as follows:
            ```
            solver = ValueIterationSolver()
            mdp = UnderlyingMDP(pomdp)
