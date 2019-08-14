@@ -88,7 +88,8 @@ function solve(solver::SparseValueIterationSolver, mdp::SparseTabularMDP)
 end
 
 function solve(solver::SparseValueIterationSolver, mdp::MDP)
-    return solve(solver, SparseTabularMDP(mdp))
+    p = solve(solver, SparseTabularMDP(mdp))
+    return ValueIterationPolicy(p.qmat, p.util, p.policy, ordered_actions(mdp), p.include_Q, mdp)
 end
 
 function solve(::SparseValueIterationSolver, ::POMDP)
