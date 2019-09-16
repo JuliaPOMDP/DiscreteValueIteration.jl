@@ -20,8 +20,6 @@ end
     S = statetype(P)
     A = actiontype(P)
     @req discount(::P)
-    @req n_states(::P)
-    @req n_actions(::P)
     @subreq ordered_states(mdp)
     @subreq ordered_actions(mdp)
     @req transition(::P,::S,::A)
@@ -31,6 +29,8 @@ end
     @req actions(::P, ::S)
     as = actions(mdp)
     ss = states(mdp)
+    @req length(::typeof(ss))
+    @req length(::typeof(as))
     a = first(as)
     s = first(ss)
     dist = transition(mdp, s, a)
@@ -63,8 +63,8 @@ function solve(solver::ValueIterationSolver, mdp::MDP; kwargs...)
     max_iterations = solver.max_iterations
     belres = solver.belres
     discount_factor = discount(mdp)
-    ns = n_states(mdp)
-    na = n_actions(mdp)
+    ns = length(states(mdp))
+    na = length(actions(mdp))
 
     # intialize the utility and Q-matrix
     if !isempty(solver.init_util)
@@ -83,14 +83,14 @@ function solve(solver::ValueIterationSolver, mdp::MDP; kwargs...)
     iter_time = 0.0
 
     # create an ordered list of states for fast iteration
-    states = ordered_states(mdp)
+    state_space = ordered_states(mdp)
 
     # main loop
     for i = 1:max_iterations
         residual = 0.0
         iter_time = @elapsed begin
         # state loop
-        for (istate,s) in enumerate(states)
+        for (istate,s) in enumerate(state_space)
             sub_aspace = actions(mdp, s)
             if isterminal(mdp, s)
                 util[istate] = 0.0

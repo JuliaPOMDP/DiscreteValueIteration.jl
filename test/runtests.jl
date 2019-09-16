@@ -14,8 +14,6 @@ mutable struct SpecialGridWorld <: MDP{GridWorldState, GridWorldAction}
 end
 
 POMDPs.discount(g::SpecialGridWorld) = discount(g.gw)
-POMDPs.n_states(g::SpecialGridWorld) = n_states(g.gw)
-POMDPs.n_actions(g::SpecialGridWorld) = n_actions(g.gw)
 POMDPs.transition(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction) = transition(g.gw, s, a)
 POMDPs.reward(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction, sp::GridWorldState) = reward(g.gw, s, a, sp)
 POMDPs.stateindex(g::SpecialGridWorld, s::GridWorldState) = stateindex(g.gw, s)

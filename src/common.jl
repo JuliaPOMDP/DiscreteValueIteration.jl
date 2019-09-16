@@ -13,8 +13,8 @@ function ValueIterationPolicy(mdp::Union{MDP,POMDP};
                               utility::AbstractVector{Float64}=zeros(n_states(mdp)),
                               policy::AbstractVector{Int64}=zeros(Int64, n_states(mdp)),
                               include_Q::Bool=true)
-    ns = n_states(mdp)
-    na = n_actions(mdp)
+    ns = length(states(mdp))
+    na = length(actions(mdp))
     @assert length(utility) == ns "Input utility dimension mismatch"
     @assert length(policy) == ns "Input policy dimension mismatch"
     action_map = ordered_actions(mdp)
