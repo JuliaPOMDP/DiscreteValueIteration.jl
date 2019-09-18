@@ -19,8 +19,6 @@ end
     S = statetype(P)
     A = actiontype(P)
     @req discount(::P)
-    @req n_states(::P)
-    @req n_actions(::P)
     @subreq ordered_states(mdp)
     @subreq ordered_actions(mdp)
     @req transition(::P,::S,::A)
@@ -30,6 +28,8 @@ end
     @req actions(::P, ::S)
     as = actions(mdp)
     ss = states(mdp)
+    @req length(::typeof(ss))
+    @req length(::typeof(as))
     a = first(as)
     s = first(ss)
     dist = transition(mdp, s, a)
@@ -40,15 +40,15 @@ end
 end
 
 function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S_A::AbstractMatrix{F}, value_S::AbstractVector{F}, out_qvals_S_A) where {F}
-    @assert size(out_qvals_S_A) == (n_states(m), n_actions(m))
-    for a in 1:n_actions(m)
+    @assert size(out_qvals_S_A) == (length(states(m)), length(actions(m)))
+    for a in 1:length(actions(m))
         out_qvals_S_A[:, a] = view(reward_S_A, :, a) + discount(m) * transition_A_S_S2[a] * value_S
     end
 end
 
 function solve(solver::SparseValueIterationSolver, mdp::SparseTabularMDP)
-    nS = n_states(mdp)
-    nA = n_actions(mdp)
+    nS = length(states(mdp))
+    nA = length(actions(mdp))
     if isempty(solver.init_util)
         v_S = zeros(nS)
     else

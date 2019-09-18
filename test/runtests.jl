@@ -14,15 +14,15 @@ mutable struct SpecialGridWorld <: MDP{GridWorldState, GridWorldAction}
 end
 
 POMDPs.discount(g::SpecialGridWorld) = discount(g.gw)
-POMDPs.n_states(g::SpecialGridWorld) = n_states(g.gw)
-POMDPs.n_actions(g::SpecialGridWorld) = n_actions(g.gw)
 POMDPs.transition(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction) = transition(g.gw, s, a)
 POMDPs.reward(g::SpecialGridWorld, s::GridWorldState, a::GridWorldAction, sp::GridWorldState) = reward(g.gw, s, a, sp)
 POMDPs.stateindex(g::SpecialGridWorld, s::GridWorldState) = stateindex(g.gw, s)
 POMDPs.actionindex(g::SpecialGridWorld, a::GridWorldAction) = actionindex(g.gw, a)
 POMDPs.actions(g::SpecialGridWorld, s::GridWorldState) = actions(g.gw, s)
 POMDPs.states(g::SpecialGridWorld) = states(g.gw)
+POMDPs.n_states(g::SpecialGridWorld) = length(states(g.gw))
 POMDPs.actions(g::SpecialGridWorld) = actions(g.gw)
+POMDPs.n_actions(g::SpecialGridWorld) = length(actions(g.gw))
 
 SpecialGridWorld() = SpecialGridWorld(LegacyGridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
 
