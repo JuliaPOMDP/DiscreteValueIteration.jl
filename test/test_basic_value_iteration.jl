@@ -9,6 +9,7 @@ function support_serial_qtest(mdp::Union{MDP,POMDP}, file::AbstractString; niter
     nnpolicy = ValueIterationPolicy(mdp, deepcopy(q), deepcopy(u), deepcopy(p))
     s = GridWorldState(1,1)
     a1 = action(policy, s)
+    @inferred action(policy, s)
     v1 = value(policy, s)
     a2 = action(npolicy, s)
     v2 = value(npolicy, s)
@@ -91,9 +92,17 @@ function test_warning()
     solve(solver, mdp, verbose=true)
 end
 
+function test_type_stability()
+    mdp = LegacyGridWorld()
+    solver = ValueIterationSolver()
+    @inferred solve(solver, mdp)
+    return true
+end
+
 @test test_complex_gridworld() == true
 @test test_simple_grid() == true
 @test test_init_solution() == true
 @test test_not_include_Q() == true
 test_warning()
 @test_throws String solve(ValueIterationSolver(), TigerPOMDP())
+@test test_type_stability() == true
