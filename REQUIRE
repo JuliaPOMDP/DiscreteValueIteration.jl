@@ -1,5 +1,0 @@
-julia 0.7
-POMDPs
-POMDPModelTools 0.1.3
-POMDPPolicies
-SparseArrays
