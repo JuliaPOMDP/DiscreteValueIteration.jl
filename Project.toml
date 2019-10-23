@@ -1,7 +1,7 @@
 name = "DiscreteValueIteration"
 uuid = "4b033969-44f6-5439-a48b-c11fa3648068"
 repo = "https://github.com/JuliaPOMDP/DiscreteValueIteration.jl"
-version = "0.4.0"
+version = "0.4.1"
 
 [deps]
 POMDPModelTools = "08074719-1b2a-587c-a292-00f91cc44415"
