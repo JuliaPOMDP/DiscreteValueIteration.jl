@@ -1,11 +1,31 @@
 # The policy type
-mutable struct ValueIterationPolicy{F} <: Policy
-    qmat::AbstractMatrix{F} # Q matrix storing Q(s,a) values
-    util::AbstractVector{F} # The value function V(s)
-    policy::AbstractVector{Int64} # Policy array, maps state index to action index
-    action_map::Vector # Maps the action index to the concrete action type
-    include_Q::Bool # Flag for including the Q-matrix
-    mdp::Union{MDP,POMDP} # uses the model for indexing in the action function
+"""
+    ValueIterationPolicy <: Policy 
+
+The policy type. Contains the Q-Matrix, the Utility function and an array of indices corresponding to optimal actions.
+There are three ways to initialize the policy type:
+
+    `policy = ValueIterationPolicy(mdp)` 
+    `policy = ValueIterationPolicy(mdp, utility_array)`
+    `policy = ValueIterationPolicy(mdp, qmatrix)`
+
+The Q-matrix is nxm, where n is the number of states and m is the number of actions.
+
+# Fields 
+- `qmat`  Q matrix storing Q(s,a) values
+- `util` The value function V(s)
+- `policy` Policy array, maps state index to action index
+- `action_map` Maps the action index to the concrete action type
+- `include_Q` Flag for including the Q-matrix
+- `mdp`  uses the model for indexing in the action function
+"""
+struct ValueIterationPolicy{Q<:AbstractMatrix, U<:AbstractVector, P<:AbstractVector, A, M<:MDP} <: Policy
+    qmat::Q
+    util::U 
+    policy::P 
+    action_map::Vector{A}
+    include_Q::Bool 
+    mdp::M
 end
 
 # constructor with an optinal initial value function argument
@@ -69,8 +89,7 @@ function POMDPPolicies.actionvalues(policy::ValueIterationPolicy, s::S) where S
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", p::ValueIterationPolicy)
-    summary(io, p)
-    println(io, ':')
+    println(io, "ValueIterationPolicy:")
     ds = get(io, :displaysize, displaysize(io))
     ioc = IOContext(io, :displaysize=>(first(ds)-1, last(ds)))
     showpolicy(ioc, mime, p.mdp, p)

@@ -87,5 +87,5 @@ end
     iob = IOBuffer()
     io = IOContext(iob, :limit=>true, :displaysize=>(10, 80))
     show(io, MIME("text/plain"), policy)
-    @test String(take!(iob)) == "ValueIterationPolicy{Float64}:\n GridWorldState(1, 1, false) -> :up\n GridWorldState(1, 2, false) -> :up\n GridWorldState(1, 3, false) -> :up\n GridWorldState(0, 0, true) -> :up"
+    @test String(take!(iob)) == "ValueIterationPolicy:\n GridWorldState(1, 1, false) -> :up\n GridWorldState(1, 2, false) -> :up\n GridWorldState(1, 3, false) -> :up\n GridWorldState(0, 0, true) -> :up"
 end
