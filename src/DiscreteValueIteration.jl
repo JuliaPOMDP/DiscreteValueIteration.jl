@@ -8,6 +8,8 @@ using POMDPs
 using POMDPModelTools
 using POMDPPolicies
 using SparseArrays
+using Distributed
+using SharedArrays
 
 import POMDPs: Solver, solve, Policy, action, value 
 
@@ -15,13 +17,15 @@ export
     ValueIterationPolicy,
     ValueIterationSolver,
     SparseValueIterationSolver,
+    ParallelValueIterationSolver,
+    ind2state
     solve,
     action,
-    value,
-    locals
+    value
 
 include("common.jl")
 include("vanilla.jl")
 include("sparse.jl")
+include("parallel.jl")
 
 end # module
