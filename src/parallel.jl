@@ -83,10 +83,10 @@ function gauss_seidel(solver::ParallelValueIterationSolver, mdp::Union{MDP, POMD
     init_pol = zeros(Int64, ns)
     qmat = init_qmat
     # shared_array_file_root = "~/tmp/"
-    util = SharedArray{Float64}(ns, init = S -> S[localindices(S)] = init_util[localindices(S)], pids=collect(1:n_procs))
-    qmat  = SharedArray{Float64}((ns, na), init = S -> S[localindices(S)] = init_qmat[localindices(S)], pids=collect(1:n_procs))
-    pol = SharedArray{Int64}(ns, init = S -> S[localindices(S)] = init_pol[localindices(S)], pids=collect(1:n_procs))
-    residual = SharedArray{Float64}(1, init = S -> S[localindices(S)] .= 0., pids=collect(1:n_procs))
+    util = SharedArray{Float64}(ns, init = S -> S[localindices(S)] = init_util[localindices(S)])
+    qmat  = SharedArray{Float64}((ns, na), init = S -> S[localindices(S)] = init_qmat[localindices(S)])
+    pol = SharedArray{Int64}(ns, init = S -> S[localindices(S)] = init_pol[localindices(S)])
+    residual = SharedArray{Float64}(1, init = S -> S[localindices(S)] .= 0.)
     # S = state_type(mdp)
     # states = SharedArray{S}("/scratch/boutonm/states.bin", (ns,), init = S -> S[localindices(S)] = states_[localindices(S)],  pids=collect(1:n_procs))
     # workers = WorkerPool(collect(1:n_procs))
