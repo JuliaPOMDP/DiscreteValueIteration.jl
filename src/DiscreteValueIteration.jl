@@ -23,6 +23,5 @@ export
 include("common.jl")
 include("vanilla.jl")
 include("sparse.jl")
-include("docs.jl")
 
 end # module
