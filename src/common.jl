@@ -59,9 +59,11 @@ function value(policy::ValueIterationPolicy, s::S) where S
     policy.util[sidx]
 end
 
+value(policy::ValueIterationPolicy, s, a) = actionvalues(policy, s)[actionindex(policy.mdp, a)]
+
 function POMDPPolicies.actionvalues(policy::ValueIterationPolicy, s::S) where S
     if !policy.include_Q
-        error("ValueIterationPolicyError: the policy does not contain the Q function!")
+        error("ValueIterationPolicy does not contain the Q matrix. Use the include_Q=true keyword argument in the solver.")
     else
         sidx = stateindex(policy.mdp, s)
         return policy.qmat[sidx,:]

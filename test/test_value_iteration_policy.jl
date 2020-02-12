@@ -89,3 +89,12 @@ end
     show(io, MIME("text/plain"), policy)
     @test String(take!(iob)) == "ValueIterationPolicy{Float64}:\n GridWorldState(1, 1, false) -> :up\n GridWorldState(1, 2, false) -> :up\n GridWorldState(1, 3, false) -> :up\n GridWorldState(0, 0, true) -> :up"
 end
+
+@testset "value" begin
+    mdp = LegacyGridWorld(sx=1, sy=3, rs = [GridWorldState(1,3)], rv = [10.0])
+    correct_qmat = [5.45636 5.1835 5.1835 5.1835; 8.20506 6.47848 7.7948 7.7948; 10.0 10.0 10.0 10.0; 0.0 0.0 0.0 0.0]
+    policy = ValueIterationPolicy(mdp, correct_qmat)
+    for s in states(mdp), a in actions(mdp)
+        @test value(policy, s, a) == correct_qmat[stateindex(mdp, s), actionindex(mdp, a)]
+    end
+end
