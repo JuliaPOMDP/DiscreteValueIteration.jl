@@ -30,8 +30,8 @@ end
 
 # constructor with an optinal initial value function argument
 function ValueIterationPolicy(mdp::Union{MDP,POMDP};
-                              utility::AbstractVector{Float64}=zeros(n_states(mdp)),
-                              policy::AbstractVector{Int64}=zeros(Int64, n_states(mdp)),
+                              utility::AbstractVector{Float64}=zeros(length(states(mdp))),
+                              policy::AbstractVector{Int64}=zeros(Int64, length(states(mdp))),
                               include_Q::Bool=true)
     ns = length(states(mdp))
     na = length(actions(mdp))
