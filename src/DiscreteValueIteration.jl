@@ -8,6 +8,7 @@ using POMDPs
 using POMDPModelTools
 using POMDPPolicies
 using SparseArrays
+import POMDPLinter: @POMDP_require, @req, @subreq, @warn_requirements
 
 import POMDPs: Solver, solve, Policy, action, value 
 

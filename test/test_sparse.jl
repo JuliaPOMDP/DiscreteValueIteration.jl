@@ -24,10 +24,8 @@ test_sparse_vanilla_same(m2)
 
 struct TwoStatesMDP <: MDP{Int, Int} end
 
-POMDPs.n_states(mdp::TwoStatesMDP) = 2
 POMDPs.states(mdp::TwoStatesMDP) = 1:2
 POMDPs.stateindex(mdp::TwoStatesMDP, s) = s 
-POMDPs.n_actions(mdp::TwoStatesMDP) = 2
 POMDPs.actions(mdp::TwoStatesMDP) = 1:2
 POMDPs.actionindex(mdp::TwoStatesMDP, a) = a
 POMDPs.discount(mdp::TwoStatesMDP) = 0.95
