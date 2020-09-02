@@ -11,15 +11,6 @@ There are two solvers in the package. The "vanilla" [`ValueIterationSolver`](src
 
 ## Installation
 
-Start Julia and make sure you have the JuliaPOMDP registry:
-
-```julia
-import POMDPs
-POMDPs.add_registry()
-```
-
-Then install using the standard package manager:
-
 ```julia
 using Pkg; Pkg.add("DiscreteValueIteration")
 ```
