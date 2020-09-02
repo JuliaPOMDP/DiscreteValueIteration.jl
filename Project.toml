@@ -12,6 +12,7 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
+julia = "1"
 POMDPLinter = "0.1"
 POMDPModelTools = "0.1.7, 0.2, 0.3"
 POMDPPolicies = "0.1.4, 0.2, 0.3"
