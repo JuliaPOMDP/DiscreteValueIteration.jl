@@ -23,7 +23,7 @@ Given an MDP `mdp` defined with [QuickPOMDPs.jl](https://github.com/JuliaPOMDP/Q
 using DiscreteValueIteration
 
 solver = ValueIterationSolver(max_iterations=100, belres=1e-6, verbose=true) # creates the solver
-solve(solver, mdp) # runs value iterations
+policy = solve(solver, mdp) # runs value iterations
 ```
 To extract the policy for a given state, simply call the action function:
 
