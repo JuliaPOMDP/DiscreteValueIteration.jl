@@ -81,7 +81,7 @@ end
 
 value(policy::ValueIterationPolicy, s, a) = actionvalues(policy, s)[actionindex(policy.mdp, a)]
 
-function POMDPPolicies.actionvalues(policy::ValueIterationPolicy, s::S) where S
+function POMDPTools.Policies.actionvalues(policy::ValueIterationPolicy, s::S) where S
     if !policy.include_Q
         error("ValueIterationPolicy does not contain the Q matrix. Use the include_Q=true keyword argument in the solver.")
     else
