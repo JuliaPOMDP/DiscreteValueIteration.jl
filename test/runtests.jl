@@ -1,7 +1,6 @@
 using DiscreteValueIteration
 using POMDPModels
-using POMDPModelTools
-using POMDPPolicies
+using POMDPTools
 using POMDPs
 using Test
 import POMDPLinter: @show_requirements
