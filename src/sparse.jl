@@ -57,7 +57,7 @@ end
 
 function _value!(V, q_vals_S_A)
     δ_max = 0.0
-    for i ∈ 1:size(q_vals_S_A,2)
+    for i ∈ 1:size(q_vals_S_A, 1)
         vp = maximum(@view q_vals_S_A[i,:])
         δ = abs(V[i] - vp)
         δ > δ_max && (δ_max = δ)
