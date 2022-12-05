@@ -43,20 +43,20 @@ function test_simple_grid()
     # ----------------------------------------------
     # 7 (0,0) is absorbing state
     mdp = LegacyGridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0])
-    
+
     solver = ValueIterationSolver(verbose=true)
     policy = solve(solver, mdp)
 
     # up: 1, down: 2, left: 3, right: 4
     correct_policy = [1,1,1,1,4,1,1] # alternative policies
-    # are possible, but since they are tied & the first 
+    # are possible, but since they are tied & the first
     # action is always 1, we will always return 1 for tied
     # actions
     return policy.policy == correct_policy
 end
 
 function test_init_solution()
-    # Initialize the value to the solution 
+    # Initialize the value to the solution
     rstates = [GridWorldState(4,3), GridWorldState(4,6), GridWorldState(9,3), GridWorldState(8,8)]
     rvals = [-10.0, -5.0, 10.0, 3.0]
     xs = 10
@@ -88,7 +88,7 @@ end
 function test_warning()
     mdp = LegacyGridWorld()
     solver = ValueIterationSolver()
-    println("There should be a warning bellow: ")
+    println("There should be a warning below: ")
     solve(solver, mdp, verbose=true)
 end
 
