@@ -25,13 +25,14 @@ test_sparse_vanilla_same(m2)
 struct TwoStatesMDP <: MDP{Int, Int} end
 
 POMDPs.states(mdp::TwoStatesMDP) = 1:2
-POMDPs.stateindex(mdp::TwoStatesMDP, s) = s 
+POMDPs.stateindex(mdp::TwoStatesMDP, s) = s
 POMDPs.actions(mdp::TwoStatesMDP) = 1:2
 POMDPs.actionindex(mdp::TwoStatesMDP, a) = a
 POMDPs.discount(mdp::TwoStatesMDP) = 0.95
 POMDPs.transition(mdp::TwoStatesMDP, s, a) = SparseCat([a], [1.0])
 POMDPs.reward(mdp::TwoStatesMDP, s, a, sp) = float(sp == 2)
 POMDPs.isterminal(mdp::TwoStatesMDP, s) = s == 2
+POMDPs.initialstate(mdp::TwoStatesMDP) = Uniform(states(mdp))
 
 
 mdp = TwoStatesMDP()
@@ -41,7 +42,7 @@ policy = solve(solver, mdp)
 sparsesolver = SparseValueIterationSolver(verbose=true)
 sparsepolicy = solve(sparsesolver, mdp)
 
-@test sparsepolicy.qmat == policy.qmat 
+@test sparsepolicy.qmat == policy.qmat
 @test value(sparsepolicy, 2) ≈ 0.0
 @test_throws String solve(SparseValueIterationSolver(), TigerPOMDP())
 

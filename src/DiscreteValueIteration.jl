@@ -7,9 +7,10 @@ using Printf
 using POMDPs
 using POMDPTools
 using SparseArrays
+using LinearAlgebra
 import POMDPLinter: @POMDP_require, @req, @subreq, @warn_requirements
 
-import POMDPs: Solver, solve, Policy, action, value 
+import POMDPs: Solver, solve, Policy, action, value
 
 export
     ValueIterationPolicy,

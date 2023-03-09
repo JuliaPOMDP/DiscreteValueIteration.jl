@@ -20,6 +20,7 @@ POMDPs.actionindex(g::SpecialGridWorld, a::GridWorldAction) = actionindex(g.gw, 
 POMDPs.actions(g::SpecialGridWorld, s::GridWorldState) = actions(g.gw, s)
 POMDPs.states(g::SpecialGridWorld) = states(g.gw)
 POMDPs.actions(g::SpecialGridWorld) = actions(g.gw)
+POMDPs.initialstate(g::SpecialGridWorld) = Uniform(states(g))
 
 SpecialGridWorld() = SpecialGridWorld(LegacyGridWorld(sx=2, sy=3, rs = [GridWorldState(2,3)], rv = [10.0]))
 

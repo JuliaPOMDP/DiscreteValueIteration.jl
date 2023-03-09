@@ -46,6 +46,26 @@ function qvalue!(m::Union{MDP,POMDP}, transition_A_S_S2, reward_S_A::AbstractMat
     end
 end
 
+function qvalue!(m::MDP, transition_A_S_S2, reward_S_A, value_S, out_qvals_S_A, _mul_cache)
+    @assert size(out_qvals_S_A) == (length(states(m)), length(actions(m)))
+    γ = discount(m)
+    for a in 1:length(actions(m))
+        Vp = mul!(_mul_cache, transition_A_S_S2[a], value_S)
+        out_qvals_S_A[:, a] .= view(reward_S_A, :, a) .+ γ .* Vp
+    end
+end
+
+function _value!(V, q_vals_S_A)
+    δ_max = 0.0
+    for i ∈ 1:size(q_vals_S_A, 1)
+        vp = maximum(@view q_vals_S_A[i,:])
+        δ = abs(V[i] - vp)
+        δ > δ_max && (δ_max = δ)
+        V[i] = vp
+    end
+    return δ_max
+end
+
 function solve(solver::SparseValueIterationSolver, mdp::SparseTabularMDP)
     nS = length(states(mdp))
     nA = length(actions(mdp))
@@ -55,36 +75,32 @@ function solve(solver::SparseValueIterationSolver, mdp::SparseTabularMDP)
         @assert length(solver.init_util) == nS "Input utility dimension mismatch"
         v_S = solver.init_util
     end
+    _mul_cache = similar(v_S)
 
     transition_A_S_S2 = transition_matrices(mdp)
     reward_S_A = reward_matrix(mdp)
     qvals_S_A = zeros(nS, nA)
-    maxchanges_T = zeros(solver.max_iterations)
 
     total_time = 0.0
     for i in 1:solver.max_iterations
         iter_time = @elapsed begin
-            qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A)
-            new_v_S = dropdims(maximum(qvals_S_A, dims=2), dims=2)
-            @assert size(v_S) == size(new_v_S)
-            maxchanges_T[i] = maximum(abs.(new_v_S .- v_S))
-            v_S = new_v_S
+            qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A, _mul_cache)
+            δ = _value!(v_S, qvals_S_A)
         end
         total_time += iter_time
         if solver.verbose
-            @info "residual: $(maxchanges_T[i]), time: $(iter_time), total time: $(total_time) " i
+            @info "residual: $(δ), time: $(iter_time), total time: $(total_time) " i
         end
-        maxchanges_T[i] < solver.belres ? break : nothing
+        δ < solver.belres && break
     end
-    qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A)
-    # Rounding to avoid floating point error noise
-    policy_S = dropdims(getindex.(argmax(round.(qvals_S_A, digits=20), dims=2), 2), dims=2)
-    if solver.include_Q
-        policy = ValueIterationPolicy(mdp, qvals_S_A, v_S, policy_S)
+    qvalue!(mdp, transition_A_S_S2, reward_S_A, v_S, qvals_S_A, _mul_cache)
+    policy_S = argmax.(eachrow(qvals_S_A))
+
+    return if solver.include_Q
+        ValueIterationPolicy(mdp, qvals_S_A, v_S, policy_S)
     else
-        policy = ValueIterationPolicy(mdp, utility=v_S, policy=policy_S, include_Q=false)
+        ValueIterationPolicy(mdp, utility=v_S, policy=policy_S, include_Q=false)
     end
-    return policy
 end
 
 function solve(solver::SparseValueIterationSolver, mdp::MDP)

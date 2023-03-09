@@ -4,6 +4,7 @@ repo = "https://github.com/JuliaPOMDP/DiscreteValueIteration.jl.git"
 version = "0.4.6"
 
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 POMDPLinter = "f3bd98c0-eb40-45e2-9eb1-f2763262d755"
 POMDPTools = "7588e00f-9cae-40de-98dc-e0c70c48cdd7"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
@@ -15,11 +16,3 @@ POMDPLinter = "0.1"
 POMDPTools = "0.1"
 POMDPs = "0.8, 0.9"
 julia = "1"
-
-[extras]
-DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-POMDPModels = "355abbd5-f08e-5560-ac9e-8b5f2592a0ca"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test", "POMDPModels", "DelimitedFiles"]
