@@ -1,7 +1,7 @@
 # DiscreteValueIteration
 
-[![Build Status](https://travis-ci.org/JuliaPOMDP/DiscreteValueIteration.jl.svg?branch=master)](https://travis-ci.org/JuliaPOMDP/DiscreteValueIteration.jl)
-[![codecov](https://codecov.io/github/JuliaPOMDP/DiscreteValueIteration.jl/branch/master/graph/badge.svg?token=Qcmkye6fB0)](https://codecov.io/github/JuliaPOMDP/DiscreteValueIteration.jl)
+[![CI](https://github.com/JuliaPOMDP/DiscreteValueIteration.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPOMDP/DiscreteValueIteration.jl/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/github/JuliaPOMDP/DiscreteValueIteration.jl/branch/master/graph/badge.svg?token=Qcmkye6fB0)](https://app.codecov.io/github/JuliaPOMDP/DiscreteValueIteration.jl)
 
 This package implements the discrete value iteration algorithm in Julia for solving Markov decision processes (MDPs).
 The user should define the problem with [QuickPOMDPs.jl](https://github.com/JuliaPOMDP/QuickPOMDPs.jl) or according to the API in [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). Examples of
