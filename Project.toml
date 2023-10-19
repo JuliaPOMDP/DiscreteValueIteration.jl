@@ -1,7 +1,7 @@
 name = "DiscreteValueIteration"
 uuid = "4b033969-44f6-5439-a48b-c11fa3648068"
 repo = "https://github.com/JuliaPOMDP/DiscreteValueIteration.jl.git"
-version = "0.4.6"
+version = "0.4.7"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
