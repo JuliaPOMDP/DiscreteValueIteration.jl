@@ -1,7 +1,7 @@
 name = "DiscreteValueIteration"
 uuid = "4b033969-44f6-5439-a48b-c11fa3648068"
 repo = "https://github.com/JuliaPOMDP/DiscreteValueIteration.jl.git"
-version = "0.4.7"
+version = "0.4.8"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -13,6 +13,6 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 POMDPLinter = "0.1"
-POMDPTools = "0.1"
-POMDPs = "0.8, 0.9"
+POMDPTools = "0.1, 1"
+POMDPs = "0.8, 0.9, 1"
 julia = "1"
